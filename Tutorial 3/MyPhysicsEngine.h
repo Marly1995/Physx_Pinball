@@ -184,10 +184,11 @@ namespace PhysicsEngine
 	{
 		MySimulationEventCallback* my_callback;
 		Plane* plane;
-		
+		Box *box1, *box2;
 		Box* base;
 		Sphere* ball;
 		Wedge *padL, *padR;
+		RevoluteJoint *joint;
 		
 	public:
 		//specify your custom filter shader here
@@ -199,6 +200,8 @@ namespace PhysicsEngine
 		{
 			px_scene->setVisualizationParameter(PxVisualizationParameter::eSCALE, 1.0f);
 			px_scene->setVisualizationParameter(PxVisualizationParameter::eCOLLISION_SHAPES, 1.0f);
+			px_scene->setVisualizationParameter(PxVisualizationParameter::eJOINT_LOCAL_FRAMES, 1.0f);
+			px_scene->setVisualizationParameter(PxVisualizationParameter::eJOINT_LIMITS, 1.0f);
 		}
 
 		//Custom scene initialisation
@@ -228,14 +231,18 @@ namespace PhysicsEngine
 			padL = new Wedge(4.0f, 1.0f, 0.5f, PxTransform(PxVec3(-12.0f, 6.0f, -5.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))));
 			padL->mesh->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
 			padL->mesh->Color(color_palette[2]);
-			padL->mesh->SetKinematic(true);
+			padL->mesh->SetKinematic(true); 
 			Add(padL->mesh);
+			//joint = new RevoluteJoint(padL->mesh, PxTransform(PxVec3(0.f, 0.f, 0.f), PxQuat(PxPi / 2, PxVec3(0.f, 1.f, 0.f))), box2, PxTransform(PxVec3(0.f, 5.f, 0.f)));
+			//joint->Get()->setConstraintFlag(PxConstraintFlag::eVISUALIZATION, true);
 
 			padR = new Wedge(4.0f, 1.0f, 0.5f, PxTransform(PxVec3(-12.0f, 6.0f, 5.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))));
 			padR->mesh->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(-PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
 			padR->mesh->Color(color_palette[2]);
 			padR->mesh->SetKinematic(true);
 			Add(padR->mesh);
+
+
 		}
 
 		//Custom udpate function
