@@ -209,7 +209,14 @@ namespace PhysicsEngine
 		{
 			SetVisualisation();			
 
-			GetMaterial()->setDynamicFriction(.2f);
+			CreateMaterial(0.94, 0.40, 0.1);
+			CreateMaterial(1.10, 0.15, 0.2);
+			CreateMaterial(0.55, 0.40, 0.6);
+			CreateMaterial(0.78, 0.42, 0.2);
+			CreateMaterial(0.04, 0.04, 0.1);
+			CreateMaterial(0.38, 0.20, 0.4);
+			CreateMaterial(0.10, 0.03, 0.1);
+			CreateMaterial(0.10, 0.08, 0.2);
 
 			///Initialise and set the customised event callback
 			my_callback = new MySimulationEventCallback();
@@ -217,14 +224,17 @@ namespace PhysicsEngine
 
 			plane = new Plane();
 			plane->Color(PxVec3(210.f/255.f,210.f/255.f,210.f/255.f));
+			plane->Material(GetMaterial(2));
 			Add(plane);
 
 			base = new Box(PxTransform(PxVec3(0.0f, 12.0f, 0.0f), PxQuat(PxPi/6, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(20.0f, 0.5f, 10.0f));
 			base->Color(color_palette[0]);
+			base->Material(GetMaterial(1));
 			base->SetKinematic(true);
 			Add(base);
 
 			ball = new Sphere(PxTransform(PxVec3(5.0f, 50.0f, 0.0f), PxQuat(PxIdentity)), 0.5f);
+			ball->Material(GetMaterial(1));
 			ball->Color(color_palette[2]);
 			Add(ball);
 
