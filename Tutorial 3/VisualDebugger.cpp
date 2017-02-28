@@ -61,7 +61,7 @@ namespace VisualDebugger
 		Renderer::InitWindow(window_name, width, height);
 		Renderer::Init();
 
-		camera = new Camera(PxVec3(0.0f, 5.0f, 15.0f), PxVec3(0.f,-.1f,-1.f), 5.f);
+		camera = new Camera(PxVec3(-30.0f, 30.0f, 0.0f), PxVec3(0.8f, -0.6f, 0.0f), 5.f);
 
 		//initialise HUD
 		HUDInit();
@@ -189,6 +189,8 @@ namespace VisualDebugger
 		//implement your own
 		case 'R':
 			scene->ExampleKeyReleaseHandler();
+			cout << camera->getDir().x << "  " << camera->getDir().y << "  " << camera->getDir().z << endl;
+			cout << camera->getEye().x << "  " << camera->getEye().y << "  " << camera->getEye().z << endl;
 			break;
 		default:
 			break;

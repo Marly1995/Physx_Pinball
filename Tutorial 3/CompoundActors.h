@@ -38,16 +38,21 @@ namespace PhysicsEngine
 	class Wedge
 	{
 	public:
-		vector<PxVec3> verts = { PxVec3(0,1,0), PxVec3(1,0,0), PxVec3(-1,0,0), PxVec3(0,0,1), PxVec3(0,0,-1) };
+		vector<PxVec3> verts = { PxVec3(0.5,1,0), PxVec3(0.5,1,1), PxVec3(1,0,0), PxVec3(0,0,0), PxVec3(0,0,1), PxVec3(1,0,1) };
 		ConvexMesh* mesh = new ConvexMesh(vector<PxVec3>(begin(verts), end(verts)));
 
-		Wedge(float h, float w, float l, PxTransform pose = PxTransform(PxIdentity), PxReal density = 1.0f)
+		Wedge(float h = 1.0f, float w = 1.0f, float l = 1.0f, PxTransform pose = PxTransform(PxIdentity), PxReal density = 1.0f)
 		{
-			verts[0] *= h;
-			verts[1] *= w;
-			verts[2] *= w;
-			verts[3] *= l;
-			verts[4] *= l;
+			verts[0].y *= h;
+			verts[0].x *= w;
+			verts[0].z *= l;
+			verts[1].y *= h;
+			verts[1].x *= w;
+			verts[1].z *= l;
+			verts[2].x *= w;
+			verts[4].z *= l;
+			verts[5].x *= w;
+			verts[5].z *= l;
 			mesh = new ConvexMesh(vector<PxVec3>(begin(verts), end(verts)), pose, density);
 		}
 	};

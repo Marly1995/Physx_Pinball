@@ -187,6 +187,7 @@ namespace PhysicsEngine
 		
 		Box* base;
 		Sphere* ball;
+		Wedge *padL, *padR;
 		
 	public:
 		//specify your custom filter shader here
@@ -223,6 +224,18 @@ namespace PhysicsEngine
 			ball = new Sphere(PxTransform(PxVec3(5.0f, 50.0f, 0.0f), PxQuat(PxIdentity)), 0.5f);
 			ball->Color(color_palette[2]);
 			Add(ball);
+
+			padL = new Wedge(4.0f, 1.0f, 0.5f, PxTransform(PxVec3(-12.0f, 6.0f, -5.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))));
+			padL->mesh->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
+			padL->mesh->Color(color_palette[2]);
+			padL->mesh->SetKinematic(true);
+			Add(padL->mesh);
+
+			padR = new Wedge(4.0f, 1.0f, 0.5f, PxTransform(PxVec3(-12.0f, 6.0f, 5.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))));
+			padR->mesh->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(-PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
+			padR->mesh->Color(color_palette[2]);
+			padR->mesh->SetKinematic(true);
+			Add(padR->mesh);
 		}
 
 		//Custom udpate function
