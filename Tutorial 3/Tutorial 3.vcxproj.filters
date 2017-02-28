@@ -54,6 +54,9 @@
     <ClInclude Include="Extras\UserData.h">
       <Filter>Header Files\Extras</Filter>
     </ClInclude>
+    <ClInclude Include="CompoundActors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PhysicsEngine.cpp">
