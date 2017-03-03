@@ -233,18 +233,18 @@ namespace PhysicsEngine
 			base->SetKinematic(true);
 			Add(base);
 
-			ball = new Sphere(PxTransform(PxVec3(5.0f, 50.0f, 0.0f), PxQuat(PxIdentity)), 0.5f);
+			ball = new Sphere(PxTransform(PxVec3(0.0f, 50.0f, -3.0f), PxQuat(PxIdentity)), 0.5f);
 			ball->Material(GetMaterial(1));
 			ball->Color(color_palette[2]);
 			Add(ball);
 
-			padL = new Wedge(4.0f, 1.0f, 0.5f, PxTransform(PxVec3(-12.0f, 6.0f, -5.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))));
+			padL = new Wedge(4.0f, 1.0f, 0.5f, PxTransform(PxVec3(-12.0f, 6.0f, -5.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))), 1.0f);
 			padL->mesh->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
 			padL->mesh->Color(color_palette[2]);
-			padL->mesh->SetKinematic(true); 
+			padL->mesh->SetKinematic(false); 
 			Add(padL->mesh);
-			//joint = new RevoluteJoint(padL->mesh, PxTransform(PxVec3(0.f, 0.f, 0.f), PxQuat(PxPi / 2, PxVec3(0.f, 1.f, 0.f))), box2, PxTransform(PxVec3(0.f, 5.f, 0.f)));
-			//joint->Get()->setConstraintFlag(PxConstraintFlag::eVISUALIZATION, true);
+			joint = new RevoluteJoint(base, PxTransform(PxVec3(-12.f, 1.f, -5.f), PxQuat(PxPi/2, PxVec3(0.f, 0.f, 1.f))), padL->mesh, PxTransform(PxVec3(0.5f, 0.f, 0.5f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
+			joint->SetLimits(-PxPi/6, PxPi/6);
 
 			padR = new Wedge(4.0f, 1.0f, 0.5f, PxTransform(PxVec3(-12.0f, 6.0f, 5.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))));
 			padR->mesh->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(-PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
@@ -263,7 +263,7 @@ namespace PhysicsEngine
 		/// An example use of key release handling
 		void ExampleKeyReleaseHandler()
 		{
-			cerr << "I am realeased!" << endl;
+			joint->DriveVelocity(10.0f);
 		}
 
 		/// An example use of key presse handling
