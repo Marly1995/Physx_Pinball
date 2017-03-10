@@ -188,7 +188,7 @@ namespace PhysicsEngine
 		Box* base;
 		Sphere* ball;
 		Wedge *padL, *padR;
-		RevoluteJoint *joint;
+		RevoluteJoint *LPjoint, *RPjoint;
 		
 	public:
 		//specify your custom filter shader here
@@ -233,7 +233,7 @@ namespace PhysicsEngine
 			base->SetKinematic(true);
 			Add(base);
 
-			ball = new Sphere(PxTransform(PxVec3(0.0f, 50.0f, -3.0f), PxQuat(PxIdentity)), 0.5f);
+			ball = new Sphere(PxTransform(PxVec3(0.0f, 50.0f, -3.0f), PxQuat(PxIdentity)), 0.2f);
 			ball->Material(GetMaterial(1));
 			ball->Color(color_palette[2]);
 			Add(ball);
@@ -243,16 +243,16 @@ namespace PhysicsEngine
 			padL->mesh->Color(color_palette[2]);
 			padL->mesh->SetKinematic(false); 
 			Add(padL->mesh);
-			joint = new RevoluteJoint(base, PxTransform(PxVec3(-12.f, 1.f, -5.f), PxQuat(PxPi/2, PxVec3(0.f, 0.f, 1.f))), padL->mesh, PxTransform(PxVec3(0.5f, 0.f, 0.5f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
-			joint->SetLimits(-PxPi/6, PxPi/6);
+			LPjoint = new RevoluteJoint(base, PxTransform(PxVec3(-12.f, 1.f, -5.f), PxQuat(PxPi/2, PxVec3(0.f, 0.f, 1.f))), padL->mesh, PxTransform(PxVec3(0.5f, 0.f, 0.5f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
+			LPjoint->SetLimits(-PxPi/6, PxPi/6);
 
 			padR = new Wedge(4.0f, 1.0f, 0.5f, PxTransform(PxVec3(-12.0f, 6.0f, 5.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))));
 			padR->mesh->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(-PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
 			padR->mesh->Color(color_palette[2]);
-			padR->mesh->SetKinematic(true);
+			padR->mesh->SetKinematic(false);
 			Add(padR->mesh);
-
-
+			RPjoint = new RevoluteJoint(base, PxTransform(PxVec3(-12.f, 1.f, 5.f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), padR->mesh, PxTransform(PxVec3(0.5f, 0.f, -0.5f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
+			RPjoint->SetLimits(-PxPi/6, PxPi / 6);
 		}
 
 		//Custom udpate function
@@ -260,16 +260,22 @@ namespace PhysicsEngine
 		{
 		}
 
-		/// An example use of key release handling
-		void ExampleKeyReleaseHandler()
+		void KeyPressR()
 		{
-			joint->DriveVelocity(10.0f);
+			RPjoint->DriveVelocity(-10.0f);
 		}
-
-		/// An example use of key presse handling
-		void ExampleKeyPressHandler()
+		void KeyReleaseR()
 		{
-			cerr << "I am pressed!" << endl;
+			RPjoint->DriveVelocity(10.0f);
+		}	
+
+		void KeyPressE()
+		{
+			LPjoint->DriveVelocity(10.0f);
+		}
+		void KeyReleaseE()
+		{
+			LPjoint->DriveVelocity(-10.0f);
 		}
 	};
 }

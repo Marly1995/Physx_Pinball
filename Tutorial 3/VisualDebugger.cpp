@@ -175,7 +175,10 @@ namespace VisualDebugger
 		{
 		//implement your own
 		case 'R':
-			scene->ExampleKeyPressHandler();
+			scene->KeyPressR();
+			break;
+		case 'E':
+			scene->KeyPressE();
 			break;
 		default:
 			break;
@@ -188,9 +191,10 @@ namespace VisualDebugger
 		{
 		//implement your own
 		case 'R':
-			scene->ExampleKeyReleaseHandler();
-			cout << camera->getDir().x << "  " << camera->getDir().y << "  " << camera->getDir().z << endl;
-			cout << camera->getEye().x << "  " << camera->getEye().y << "  " << camera->getEye().z << endl;
+			scene->KeyReleaseR();
+			break;
+		case 'E':
+			scene->KeyReleaseE();
 			break;
 		default:
 			break;
