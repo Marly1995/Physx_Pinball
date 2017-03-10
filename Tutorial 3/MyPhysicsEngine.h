@@ -51,15 +51,15 @@ namespace PhysicsEngine
 	///An example class showing the use of springs (distance joints).
 	class Trampoline
 	{
+	public:
 		vector<DistanceJoint*> springs;
 		Box *bottom, *top;
 
-	public:
-		Trampoline(const PxVec3& dimensions=PxVec3(1.f,1.f,1.f), PxReal stiffness=1.f, PxReal damping=1.f)
+		Trampoline(const PxVec3& dimensions=PxVec3(1.f,1.f,1.f), PxReal stiffness=1.f, PxReal damping=1.f, PxTransform botPos = PxTransform(PxIdentity), PxTransform topPos = PxTransform(PxIdentity))
 		{
 			PxReal thickness = .1f;
-			bottom = new Box(PxTransform(PxVec3(0.f,thickness,0.f)),PxVec3(dimensions.x,thickness,dimensions.z));
-			top = new Box(PxTransform(PxVec3(0.f,dimensions.y+thickness,0.f)),PxVec3(dimensions.x,thickness,dimensions.z));
+			bottom = new Box(PxTransform(PxVec3(botPos.p.x, topPos.p.y + thickness, botPos.p.z), PxQuat(botPos.q)), PxVec3(dimensions.x, thickness, dimensions.z));
+			top = new Box(PxTransform(PxVec3(topPos.p.x, topPos.p.y + dimensions.y + thickness, topPos.p.z), PxQuat(topPos.q)), PxVec3(dimensions.x, thickness, dimensions.z));
 			springs.resize(4);
 			springs[0] = new DistanceJoint(bottom, PxTransform(PxVec3(dimensions.x,thickness,dimensions.z)), top, PxTransform(PxVec3(dimensions.x,-dimensions.y,dimensions.z)));
 			springs[1] = new DistanceJoint(bottom, PxTransform(PxVec3(dimensions.x,thickness,-dimensions.z)), top, PxTransform(PxVec3(dimensions.x,-dimensions.y,-dimensions.z)));
@@ -71,6 +71,7 @@ namespace PhysicsEngine
 				springs[i]->Stiffness(stiffness);
 				springs[i]->Damping(damping);
 			}
+			bottom->SetKinematic(true);
 		}
 
 		void AddToScene(Scene* scene)
@@ -184,9 +185,10 @@ namespace PhysicsEngine
 	{
 		MySimulationEventCallback* my_callback;
 		Plane* plane;
-		Box *box1, *box2;
 		Box* base;
 		Sphere* ball;
+		Trampoline *plunger;
+		DistanceJoint *spring;
 		Wedge *padL, *padR;
 		RevoluteJoint *LPjoint, *RPjoint;
 		
@@ -233,9 +235,9 @@ namespace PhysicsEngine
 			base->SetKinematic(true);
 			Add(base);
 
-			ball = new Sphere(PxTransform(PxVec3(0.0f, 50.0f, -3.0f), PxQuat(PxIdentity)), 0.2f);
+			ball = new Sphere(PxTransform(PxVec3(0.0f, 50.0f, -3.0f), PxQuat(PxIdentity)), 0.25f);
 			ball->Material(GetMaterial(1));
-			ball->Color(color_palette[2]);
+			ball->Color(color_palette[1]);
 			Add(ball);
 
 			padL = new Wedge(4.0f, 1.0f, 0.5f, PxTransform(PxVec3(-12.0f, 6.0f, -5.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))), 1.0f);
@@ -253,6 +255,12 @@ namespace PhysicsEngine
 			Add(padR->mesh);
 			RPjoint = new RevoluteJoint(base, PxTransform(PxVec3(-12.f, 1.f, 5.f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), padR->mesh, PxTransform(PxVec3(0.5f, 0.f, -0.5f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
 			RPjoint->SetLimits(-PxPi/6, PxPi / 6);
+
+			plunger = new Trampoline(PxVec3(.5f, 1.0f, .5f), 100.0f, 10.0f, PxTransform(PxVec3(-12.0f, 6.0f, 8.0f), PxQuat(-PxPi / 3, PxVec3(0.0f, 0.0f, 1.0f))), PxTransform(PxVec3(-12.0f, 6.0f, 8.0f), PxQuat(-PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))));
+			//plunger->Color(color_palette[2]);
+			//plunger->Material(GetMaterial(1));
+			//plunger->SetKinematic(true);
+			plunger->AddToScene(this);
 		}
 
 		//Custom udpate function
@@ -276,6 +284,11 @@ namespace PhysicsEngine
 		void KeyReleaseE()
 		{
 			LPjoint->DriveVelocity(-10.0f);
+		}
+
+		void LaunchPlunger()
+		{
+			this->GetSelectedActor()->addForce()
 		}
 	};
 }

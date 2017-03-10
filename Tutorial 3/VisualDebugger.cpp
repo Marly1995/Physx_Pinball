@@ -203,6 +203,12 @@ namespace VisualDebugger
 
 	void UserKeyHold(int key)
 	{
+		switch (toupper(key))
+		{
+		case 'L':
+			scene->LaunchPlunger();
+			break;
+		}
 	}
 
 	//handle camera control keys
