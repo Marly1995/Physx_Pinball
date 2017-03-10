@@ -144,6 +144,9 @@ namespace PhysicsEngine
 		///Get the selected dynamic actor on the scene
 		PxRigidDynamic* GetSelectedActor();
 
+		// Select a specific actor
+		void SelectActor(int index);
+
 		///Switch to the next dynamic actor
 		void SelectNextActor();
 

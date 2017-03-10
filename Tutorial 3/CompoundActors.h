@@ -57,6 +57,19 @@ namespace PhysicsEngine
 		}
 	};
 
+	class Walls : public DynamicActor
+	{
+	public:
+		Walls(const PxTransform& pose = PxTransform(PxIdentity), PxVec3 dimensions = PxVec3(0.5f, 0.5f, 0.5f), PxReal density = 1.0f)
+			: DynamicActor(pose)
+		{
+			CreateShape(PxBoxGeometry(dimensions), density);
+			CreateShape(PxBoxGeometry(dimensions), density);
+			CreateShape(PxBoxGeometry(PxVec3(dimensions.z, dimensions.y, dimensions.x/2)), density);
+			CreateShape(PxBoxGeometry(PxVec3(dimensions.z, dimensions.y, dimensions.x/2)), density);
+		}
+	};
+
 	class Hexagon
 	{
 	public:

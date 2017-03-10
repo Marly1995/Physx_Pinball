@@ -57,7 +57,7 @@ namespace PhysicsEngine
 
 		Trampoline(const PxVec3& dimensions=PxVec3(1.f,1.f,1.f), PxReal stiffness=1.f, PxReal damping=1.f, PxTransform botPos = PxTransform(PxIdentity), PxTransform topPos = PxTransform(PxIdentity))
 		{
-			PxReal thickness = .1f;
+			PxReal thickness = 0.1f;
 			bottom = new Box(PxTransform(PxVec3(botPos.p.x, topPos.p.y + thickness, botPos.p.z), PxQuat(botPos.q)), PxVec3(dimensions.x, thickness, dimensions.z));
 			top = new Box(PxTransform(PxVec3(topPos.p.x, topPos.p.y + dimensions.y + thickness, topPos.p.z), PxQuat(topPos.q)), PxVec3(dimensions.x, thickness, dimensions.z));
 			springs.resize(4);
@@ -187,8 +187,13 @@ namespace PhysicsEngine
 		Plane* plane;
 		Box* base;
 		Sphere* ball;
+		Walls *walls;
+
 		Trampoline *plunger;
 		DistanceJoint *spring;
+		bool pullSpring = false;
+		float springStr = 0.0f;
+
 		Wedge *padL, *padR;
 		RevoluteJoint *LPjoint, *RPjoint;
 		
@@ -224,22 +229,26 @@ namespace PhysicsEngine
 			my_callback = new MySimulationEventCallback();
 			px_scene->setSimulationEventCallback(my_callback);
 
+			// actor 1 plane
 			plane = new Plane();
 			plane->Color(PxVec3(210.f/255.f,210.f/255.f,210.f/255.f));
 			plane->Material(GetMaterial(2));
 			Add(plane);
 
+			// actor 2 base
 			base = new Box(PxTransform(PxVec3(0.0f, 12.0f, 0.0f), PxQuat(PxPi/6, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(20.0f, 0.5f, 10.0f));
 			base->Color(color_palette[0]);
 			base->Material(GetMaterial(1));
 			base->SetKinematic(true);
 			Add(base);
 
-			ball = new Sphere(PxTransform(PxVec3(0.0f, 50.0f, -3.0f), PxQuat(PxIdentity)), 0.25f);
+			// actor 3 ball
+			ball = new Sphere(PxTransform(PxVec3(-8.0f,12.0f, 8.0f), PxQuat(PxIdentity)), 0.25f);
 			ball->Material(GetMaterial(1));
 			ball->Color(color_palette[1]);
 			Add(ball);
 
+			// actor 4 left paddle
 			padL = new Wedge(4.0f, 1.0f, 0.5f, PxTransform(PxVec3(-12.0f, 6.0f, -5.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))), 1.0f);
 			padL->mesh->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
 			padL->mesh->Color(color_palette[2]);
@@ -248,6 +257,7 @@ namespace PhysicsEngine
 			LPjoint = new RevoluteJoint(base, PxTransform(PxVec3(-12.f, 1.f, -5.f), PxQuat(PxPi/2, PxVec3(0.f, 0.f, 1.f))), padL->mesh, PxTransform(PxVec3(0.5f, 0.f, 0.5f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
 			LPjoint->SetLimits(-PxPi/6, PxPi/6);
 
+			// actor 5 right paddle
 			padR = new Wedge(4.0f, 1.0f, 0.5f, PxTransform(PxVec3(-12.0f, 6.0f, 5.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))));
 			padR->mesh->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(-PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
 			padR->mesh->Color(color_palette[2]);
@@ -256,16 +266,31 @@ namespace PhysicsEngine
 			RPjoint = new RevoluteJoint(base, PxTransform(PxVec3(-12.f, 1.f, 5.f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), padR->mesh, PxTransform(PxVec3(0.5f, 0.f, -0.5f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
 			RPjoint->SetLimits(-PxPi/6, PxPi / 6);
 
-			plunger = new Trampoline(PxVec3(.5f, 1.0f, .5f), 100.0f, 10.0f, PxTransform(PxVec3(-12.0f, 6.0f, 8.0f), PxQuat(-PxPi / 3, PxVec3(0.0f, 0.0f, 1.0f))), PxTransform(PxVec3(-12.0f, 6.0f, 8.0f), PxQuat(-PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))));
-			//plunger->Color(color_palette[2]);
-			//plunger->Material(GetMaterial(1));
-			//plunger->SetKinematic(true);
+			// actor 6 and 7 bottom and top respective plunger components
+			plunger = new Trampoline(PxVec3(.5f, 2.0f, .5f), 100.0f, 10.0f, PxTransform(PxVec3(-12.0f, 6.0f, 8.0f), PxQuat(-PxPi / 3, PxVec3(0.0f, 0.0f, 1.0f))), PxTransform(PxVec3(-12.0f, 6.0f, 8.0f), PxQuat(-PxPi / 3, PxVec3(0.0f, 0.0f, 1.0f))));
 			plunger->AddToScene(this);
+
+			walls = new Walls(PxTransform(PxVec3(PxIdentity), PxQuat(PxPi/6, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(20.0f, 2.0f, 0.5f));
+			walls->GetShape(0)->setLocalPose(PxTransform(PxVec3(4.0f, 12.0f, 10.0f), PxQuat(PxIdentity)));
+			walls->GetShape(1)->setLocalPose(PxTransform(PxVec3(4.0f, 12.0f, -10.0f), PxQuat(PxIdentity)));
+			walls->GetShape(2)->setLocalPose(PxTransform(PxVec3(-14.0f, 12.0f, 0.0f), PxQuat(PxIdentity)));
+			walls->GetShape(3)->setLocalPose(PxTransform(PxVec3(24.0f, 12.0f, 0.0f), PxQuat(PxIdentity)));
+			walls->SetKinematic(true);
+			Add(walls);
 		}
 
 		//Custom udpate function
 		virtual void CustomUpdate() 
 		{
+			if (pullSpring)
+			{
+				springStr += 2.0f;
+				if (springStr >= 100.0f) { springStr = 200.0f; }
+				//this->SelectActor(5);			
+				//PxTransform current = this->GetSelectedActor()->getGlobalPose();
+				//PxVec3 vec = PxVec3(current.p.x - 0.01f, current.p.y - 0.02f, current.p.z);
+				//this->GetSelectedActor()->setGlobalPose(PxTransform(vec, current.q));				
+			}
 		}
 
 		void KeyPressR()
@@ -286,9 +311,20 @@ namespace PhysicsEngine
 			LPjoint->DriveVelocity(-10.0f);
 		}
 
-		void LaunchPlunger()
+		void KeyPressL()
 		{
-			this->GetSelectedActor()->addForce()
+			pullSpring = true;
+			//plunger->top->SetKinematic(true);
+		}
+
+		void KeyReleaseL()
+		{
+			pullSpring = false;
+			this->SelectActor(5);
+			this->GetSelectedActor()->addForce(PxVec3(2.0f, 1.0f, 0.0f) * springStr);			
+			springStr = 0.0f;
+			//plunger->top->SetKinematic(false);
+
 		}
 	};
 }

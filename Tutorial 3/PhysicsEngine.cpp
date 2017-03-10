@@ -313,6 +313,19 @@ namespace PhysicsEngine
 		return selected_actor;
 	}
 
+	// custom select
+	void Scene::SelectActor(int index)
+	{
+		std::vector<PxRigidDynamic*> actors(px_scene->getNbActors(PxActorTypeSelectionFlag::eRIGID_DYNAMIC));
+		if (actors.size() && (px_scene->getActors(PxActorTypeSelectionFlag::eRIGID_DYNAMIC, (PxActor**)&actors.front(), (PxU32)actors.size())))
+		{
+			if (selected_actor)
+			{
+				selected_actor = actors[index];
+			}
+		}
+	}
+
 	void Scene::SelectNextActor()
 	{
 		std::vector<PxRigidDynamic*> actors(px_scene->getNbActors(PxActorTypeSelectionFlag::eRIGID_DYNAMIC));
