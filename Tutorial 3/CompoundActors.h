@@ -80,14 +80,39 @@ namespace PhysicsEngine
 		{
 			float theta = 0.0f;
 
-			for (int i = 0; i < 3; i++)
+			for (int i = 0; i < 6; i++)
 			{
 				theta = i * 2.0f * PxPi / 6;
 				verts[i] = PxVec3(edge * cosf(theta), 0.0f, edge * sinf(theta));
 			}
-			for (int i = 0; i < 3; i++)
+			for (int i = 0; i < 6; i++)
 			{
 				verts.push_back(PxVec3(verts[i].x, verts[i].y + h, verts[i].z));
+			}
+			mesh = new ConvexMesh(vector<PxVec3>(begin(verts), end(verts)), pose, density);
+		}
+	};
+
+	class CurvedWall
+	{
+	public:
+		vector<PxVec3> verts{ PxVec3(1,0,0), PxVec3(0,0,1), PxVec3(0,0,0) };
+		ConvexMesh* mesh = new ConvexMesh(vector<PxVec3>(begin(verts), end(verts)));
+
+		CurvedWall(float l, int divisions, PxTransform pose = PxTransform(PxIdentity), PxReal density = 1.0f)
+		{
+			float theta = 0.0f;
+
+			verts[0] *= l;
+			verts[1] *= l;
+			for (int i = 0; i < divisions; i++)
+			{
+				theta = i * 2.0f * PxPi / (divisions*4);
+				verts.push_back(PxVec3((l * cosf(theta)), 0.0f, (l * sinf(theta))));
+			}
+			for (int i = 0; i < divisions+3; i++)
+			{
+				verts.push_back(PxVec3(verts[i].x, verts[i].y + 1.0f, verts[i].z));
 			}
 			mesh = new ConvexMesh(vector<PxVec3>(begin(verts), end(verts)), pose, density);
 		}

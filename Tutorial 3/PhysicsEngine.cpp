@@ -269,6 +269,8 @@ namespace PhysicsEngine
 		selected_actor = 0;
 
 		SelectNextActor();
+		SelectActor(2);
+		selected_actor->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
 	}
 
 	void Scene::Update(PxReal dt)

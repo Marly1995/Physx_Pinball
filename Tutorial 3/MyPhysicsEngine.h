@@ -161,7 +161,7 @@ namespace PhysicsEngine
 
 		pairFlags = PxPairFlag::eCONTACT_DEFAULT;
 		//enable continous collision detection
-//		pairFlags |= PxPairFlag::eCCD_LINEAR;
+		pairFlags |= PxPairFlag::eCCD_LINEAR;
 		
 		
 		//customise collision filtering here
@@ -196,11 +196,17 @@ namespace PhysicsEngine
 
 		Wedge *padL, *padR;
 		RevoluteJoint *LPjoint, *RPjoint;
+
+		Hexagon *spinner;
+		RevoluteJoint *spinnerJoint;
+
+		Wedge *topL, *topR;
+		RevoluteJoint *TLjoint, *TRjoint;
 		
 	public:
 		//specify your custom filter shader here
 		//PxDefaultSimulationFilterShader by default
-		MyScene() : Scene() {};
+		MyScene() : Scene(CustomFilterShader) {};
 
 		///A custom scene class
 		void SetVisualisation()
@@ -238,15 +244,16 @@ namespace PhysicsEngine
 			// actor 2 base
 			base = new Box(PxTransform(PxVec3(0.0f, 12.0f, 0.0f), PxQuat(PxPi/6, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(20.0f, 0.5f, 10.0f));
 			base->Color(color_palette[0]);
-			base->Material(GetMaterial(1));
+			base->Material(GetMaterial(6));
 			base->SetKinematic(true);
 			Add(base);
 
 			// actor 3 ball
-			ball = new Sphere(PxTransform(PxVec3(-8.0f,12.0f, 8.0f), PxQuat(PxIdentity)), 0.25f);
-			ball->Material(GetMaterial(1));
+			ball = new Sphere(PxTransform(PxVec3(-8.0f,12.0f, 7.0f), PxQuat(PxIdentity)), 0.25f);
+			ball->Material(GetMaterial(6));
 			ball->Color(color_palette[1]);
 			Add(ball);
+			
 
 			// actor 4 left paddle
 			padL = new Wedge(4.0f, 1.0f, 0.5f, PxTransform(PxVec3(-12.0f, 6.0f, -5.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))), 1.0f);
@@ -263,11 +270,11 @@ namespace PhysicsEngine
 			padR->mesh->Color(color_palette[2]);
 			padR->mesh->SetKinematic(false);
 			Add(padR->mesh);
-			RPjoint = new RevoluteJoint(base, PxTransform(PxVec3(-12.f, 1.f, 5.f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), padR->mesh, PxTransform(PxVec3(0.5f, 0.f, -0.5f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
+			RPjoint = new RevoluteJoint(base, PxTransform(PxVec3(-12.f, 0.5f, 5.f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), padR->mesh, PxTransform(PxVec3(0.5f, 0.f, -0.5f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
 			RPjoint->SetLimits(-PxPi/6, PxPi / 6);
 
 			// actor 6 and 7 bottom and top respective plunger components
-			plunger = new Trampoline(PxVec3(.5f, 2.0f, .5f), 100.0f, 10.0f, PxTransform(PxVec3(-12.0f, 6.0f, 8.0f), PxQuat(-PxPi / 3, PxVec3(0.0f, 0.0f, 1.0f))), PxTransform(PxVec3(-12.0f, 6.0f, 8.0f), PxQuat(-PxPi / 3, PxVec3(0.0f, 0.0f, 1.0f))));
+			plunger = new Trampoline(PxVec3(.5f, 2.0f, .5f), 100.0f, 10.0f, PxTransform(PxVec3(-12.0f, 6.0f, 7.0f), PxQuat(-PxPi / 3, PxVec3(0.0f, 0.0f, 1.0f))), PxTransform(PxVec3(-12.0f, 6.0f, 8.0f), PxQuat(-PxPi / 3, PxVec3(0.0f, 0.0f, 1.0f))));
 			plunger->AddToScene(this);
 
 			walls = new Walls(PxTransform(PxVec3(PxIdentity), PxQuat(PxPi/6, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(20.0f, 2.0f, 0.5f));
@@ -277,11 +284,30 @@ namespace PhysicsEngine
 			walls->GetShape(3)->setLocalPose(PxTransform(PxVec3(24.0f, 12.0f, 0.0f), PxQuat(PxIdentity)));
 			walls->SetKinematic(true);
 			Add(walls);
+
+			spinner = new Hexagon(.5f, 2.0f, PxTransform(PxVec3(10.0f, 16.0f, 0.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))));
+			Add(spinner->mesh);
+			spinnerJoint = new RevoluteJoint(base, PxTransform(PxVec3(11.f, 0.5f, 0.f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), spinner->mesh, PxTransform(PxVec3(0.0f, 0.f, 0.0f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));		
+
+			topR = new Wedge(4.0f, 2.0f, 1.0f, PxTransform(PxVec3(12.0f, 19.0f, 8.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))), 0.1f);
+			topR->mesh->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(-PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
+			Add(topR->mesh);
+			TRjoint = new RevoluteJoint(topR->mesh, PxTransform(PxVec3(1.0f, 0.f, -0.5f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))), base, PxTransform(PxVec3(12.f, 0.0f, 8.f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))));
+			TRjoint->SetLimits(-PxPi / 6, PxPi / 6);			
+
+			topL = new Wedge(4.0f, 2.0f, 1.0f, PxTransform(PxVec3(12.0f, 19.0f, -8.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))), 0.1f);
+			topL->mesh->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
+			Add(topL->mesh);
+			TLjoint = new RevoluteJoint(base, PxTransform(PxVec3(12.f, 1.0f, -8.f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), topL->mesh, PxTransform(PxVec3(1.0f, 0.f, 0.5f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
+			TLjoint->SetLimits(-PxPi / 6, PxPi / 6);
 		}
 
 		//Custom udpate function
 		virtual void CustomUpdate() 
 		{
+			spinnerJoint->DriveVelocity(10.0f);
+			TRjoint->DriveVelocity(-1.0f);
+			
 			if (pullSpring)
 			{
 				springStr += 2.0f;
