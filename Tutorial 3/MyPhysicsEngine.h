@@ -129,15 +129,24 @@ namespace PhysicsEngine
 			//check all pairs
 			for (PxU32 i = 0; i < nbPairs; i++)
 			{
-				//check eNOTIFY_TOUCH_FOUND
-				if (pairs[i].events & PxPairFlag::eNOTIFY_TOUCH_FOUND)
+				////check eNOTIFY_TOUCH_FOUND
+				//if (pairs[i].events & PxPairFlag::eNOTIFY_TOUCH_FOUND)
+				//{
+				//	cerr << "onContact::eNOTIFY_TOUCH_FOUND" << endl;
+				//}
+				////check eNOTIFY_TOUCH_LOST
+				//if (pairs[i].events & PxPairFlag::eNOTIFY_TOUCH_LOST)
+				//{
+				//	cerr << "onContact::eNOTIFY_TOUCH_LOST" << endl;
+				//}
+				switch (pairs[i].shapes[0]->getSimulationFilterData().word0)
 				{
-					cerr << "onContact::eNOTIFY_TOUCH_FOUND" << endl;
-				}
-				//check eNOTIFY_TOUCH_LOST
-				if (pairs[i].events & PxPairFlag::eNOTIFY_TOUCH_LOST)
-				{
-					cerr << "onContact::eNOTIFY_TOUCH_LOST" << endl;
+				case FilterGroup::ACTOR0:
+					cerr << "tits" << endl;
+					break;
+				case FilterGroup::ACTOR1:
+					cerr << "butts" << endl;
+					break;
 				}
 			}
 		}
@@ -234,6 +243,8 @@ namespace PhysicsEngine
 			CreateMaterial(0.10, 0.03, 0.1);
 			CreateMaterial(0.10, 0.08, 0.2);
 
+			float tableAngle = PxPi / 6;
+
 			///Initialise and set the customised event callback
 			my_callback = new MySimulationEventCallback();
 			px_scene->setSimulationEventCallback(my_callback);
@@ -246,7 +257,7 @@ namespace PhysicsEngine
 			Add(plane);
 
 			// actor 2 base
-			base = new Box(PxTransform(PxVec3(0.0f, 12.0f, 0.0f), PxQuat(PxPi/6, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(20.0f, 0.5f, 10.0f));
+			base = new Box(PxTransform(PxVec3(0.0f, 12.0f, 0.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(20.0f, 0.5f, 10.0f));
 			base->Color(color_palette[0]);
 			base->Material(GetMaterial(6));
 			base->SetKinematic(true);
@@ -258,9 +269,10 @@ namespace PhysicsEngine
 			ball->Color(color_palette[1]);
 			Add(ball);			
 			ball->Get()->isRigidBody()->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
+			ball->SetupFiltering(FilterGroup::ACTOR0, FilterGroup::ACTOR1);
 
 			// actor 4 left paddle
-			padL = new Wedge(4.0f, 1.5f, 1.f, PxTransform(PxVec3(-12.0f, 6.0f, -5.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))), 1.0f);
+			padL = new Wedge(4.0f, 1.5f, 1.f, PxTransform(PxVec3(-12.0f, 6.0f, -5.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), 1.0f);
 			padL->mesh->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
 			padL->mesh->Color(color_palette[2]);
 			padL->mesh->SetKinematic(false); 
@@ -269,7 +281,7 @@ namespace PhysicsEngine
 			LPjoint->SetLimits(-PxPi/6, PxPi/6);
 
 			// actor 5 right paddle
-			padR = new Wedge(4.0f, 1.5f, 1.f, PxTransform(PxVec3(-12.0f, 6.0f, 5.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))));
+			padR = new Wedge(4.0f, 1.5f, 1.f, PxTransform(PxVec3(-12.0f, 6.0f, 5.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))));
 			padR->mesh->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(-PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
 			padR->mesh->Color(color_palette[2]);
 			padR->mesh->SetKinematic(false);
@@ -278,7 +290,7 @@ namespace PhysicsEngine
 			RPjoint->SetLimits(-PxPi/6, PxPi / 6);
 
 			// actor 6 and 7 bottom and top respective plunger components
-			plunger = new Trampoline(PxVec3(.5f, 0.5f, 0.5f), 100.0f, 10.0f, PxTransform(PxVec3(-12.0f, 6.0f, 9.0f), PxQuat(-PxPi / 3, PxVec3(0.0f, 0.0f, 1.0f))), PxTransform(PxVec3(-12.0f, 6.0f, 9.0f), PxQuat(-PxPi / 3, PxVec3(0.0f, 0.0f, 1.0f))));
+			plunger = new Trampoline(PxVec3(.5f, 0.5f, 0.5f), 100.0f, 10.0f, PxTransform(PxVec3(-12.0f, 6.0f, 9.0f), PxQuat(-tableAngle*2, PxVec3(0.0f, 0.0f, 1.0f))), PxTransform(PxVec3(-12.0f, 6.0f, 9.0f), PxQuat(-tableAngle*2, PxVec3(0.0f, 0.0f, 1.0f))));
 			plunger->AddToScene(this);
 
 			walls = new Walls(PxTransform(PxVec3(PxIdentity), PxQuat(PxPi/6, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(20.0f, 2.0f, 0.5f));
@@ -289,41 +301,42 @@ namespace PhysicsEngine
 			walls->SetKinematic(true);
 			Add(walls);
 
-			spinner = new Hexagon(.5f, 2.0f, PxTransform(PxVec3(10.0f, 16.0f, 0.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))));
+			spinner = new Hexagon(.5f, 2.0f, PxTransform(PxVec3(10.0f, 16.0f, 0.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))));
 			Add(spinner->mesh);
-			spinnerJoint = new RevoluteJoint(base, PxTransform(PxVec3(11.f, 0.5f, 0.f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), spinner->mesh, PxTransform(PxVec3(0.0f, 0.f, 0.0f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));		
+			spinnerJoint = new RevoluteJoint(base, PxTransform(PxVec3(11.f, 0.5f, 0.f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), spinner->mesh, PxTransform(PxVec3(0.0f, 0.f, 0.0f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));	
+			spinner->mesh->SetupFiltering(FilterGroup::ACTOR1, FilterGroup::ACTOR0);
 
-			topR = new Dimond(2.0f, 1.0f, 1.0f, PxTransform(PxVec3(8.0f, 14.0f, 6.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))), 0.5f);
+			topR = new Dimond(2.0f, 1.0f, 1.0f, PxTransform(PxVec3(8.0f, 14.0f, 6.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), 0.5f);
 			topR->mesh->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
 			Add(topR->mesh);
 			TRjoint = new RevoluteJoint(base, PxTransform(PxVec3(8.0f, 0.0f, 6.0f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), topR->mesh, PxTransform(PxVec3(0.5f, -1.f, 0.0f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
 
-			topL = new Dimond(2.0f, 1.0f, 1.0f, PxTransform(PxVec3(8.0f, 14.0f, -6.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))), 0.5f);
+			topL = new Dimond(2.0f, 1.0f, 1.0f, PxTransform(PxVec3(8.0f, 14.0f, -6.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), 0.5f);
 			topL->mesh->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
 			Add(topL->mesh);
 			TLjoint = new RevoluteJoint(base, PxTransform(PxVec3(8.0f, 1.0f, -6.0f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), topL->mesh, PxTransform(PxVec3(0.5f, 0.f, 0.0f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
 
-			box1 = new Box(PxTransform(PxVec3(13.0f, 20.0f, -8.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(4.0f, 1.0f, 0.5f));
+			box1 = new Box(PxTransform(PxVec3(13.0f, 20.0f, -8.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(4.0f, 1.0f, 0.5f));
 			box1->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(-PxPi / 4, PxVec3(0.0f, 1.0f, 0.0f))));
 			box1->SetKinematic(true);
 			Add(box1);
 
-			box2 = new Box(PxTransform(PxVec3(13.0f, 20.0f, 8.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(4.0f, 1.0f, 0.5f));
+			box2 = new Box(PxTransform(PxVec3(13.0f, 20.0f, 8.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(4.0f, 1.0f, 0.5f));
 			box2->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(PxPi / 4, PxVec3(0.0f, 1.0f, 0.0f))));
 			box2->SetKinematic(true);
 			Add(box2);
 
-			box3 = new Box(PxTransform(PxVec3(-8.0f, 8.0f, -8.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(3.0f, 1.0f, 0.5f));
+			box3 = new Box(PxTransform(PxVec3(-8.0f, 8.0f, -8.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(3.0f, 1.0f, 0.5f));
 			box3->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(PxPi / 3, PxVec3(0.0f, 1.0f, 0.0f))));
 			box3->SetKinematic(true);
 			Add(box3);
 
-			box4 = new Box(PxTransform(PxVec3(-9.0f, 8.0f, 7.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(1.25f, 1.0f, 0.5f));
+			box4 = new Box(PxTransform(PxVec3(-9.0f, 8.0f, 7.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(1.25f, 1.0f, 0.5f));
 			box4->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(-PxPi / 3, PxVec3(0.0f, 1.0f, 0.0f))));
 			box4->SetKinematic(true);
 			Add(box4);
 
-			box5 = new Box(PxTransform(PxVec3(-5.0f, 10.0f, 8.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(12.f, 1.0f, 0.5f));
+			box5 = new Box(PxTransform(PxVec3(-5.0f, 10.0f, 8.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(12.f, 1.0f, 0.5f));
 
 			box5->SetKinematic(true);
 			Add(box5);
@@ -333,7 +346,6 @@ namespace PhysicsEngine
 		virtual void CustomUpdate() 
 		{
 			spinnerJoint->DriveVelocity(10.0f);
-			//TRjoint->DriveVelocity(-1.0f);
 
 			if (pullSpring)
 			{
