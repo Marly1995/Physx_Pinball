@@ -159,9 +159,10 @@ namespace PhysicsEngine
 			return PxFilterFlags();
 		}
 
-		pairFlags = PxPairFlag::eCONTACT_DEFAULT;
 		//enable continous collision detection
-		pairFlags |= PxPairFlag::eCCD_LINEAR;
+		pairFlags = PxPairFlag::eSOLVE_CONTACT;
+		pairFlags |= PxPairFlag::eDETECT_DISCRETE_CONTACT;
+		pairFlags |= PxPairFlag::eDETECT_CCD_CONTACT;
 		
 		
 		//customise collision filtering here
@@ -200,8 +201,10 @@ namespace PhysicsEngine
 		Hexagon *spinner;
 		RevoluteJoint *spinnerJoint;
 
-		Wedge *topL, *topR;
+		Dimond *topL, *topR;
 		RevoluteJoint *TLjoint, *TRjoint;
+
+		Box *box1, *box2, *box3, *box4, *box5;
 		
 	public:
 		//specify your custom filter shader here
@@ -215,16 +218,16 @@ namespace PhysicsEngine
 			px_scene->setVisualizationParameter(PxVisualizationParameter::eCOLLISION_SHAPES, 1.0f);
 			px_scene->setVisualizationParameter(PxVisualizationParameter::eJOINT_LOCAL_FRAMES, 1.0f);
 			px_scene->setVisualizationParameter(PxVisualizationParameter::eJOINT_LIMITS, 1.0f);
+
 		}
 
 		//Custom scene initialisation
 		virtual void CustomInit() 
 		{
 			SetVisualisation();			
-
 			CreateMaterial(0.94, 0.40, 0.1);
 			CreateMaterial(1.10, 0.15, 0.2);
-			CreateMaterial(0.55, 0.40, 0.6);
+			CreateMaterial(0.25, 0.1, 0.4);
 			CreateMaterial(0.78, 0.42, 0.2);
 			CreateMaterial(0.04, 0.04, 0.1);
 			CreateMaterial(0.38, 0.20, 0.4);
@@ -234,6 +237,7 @@ namespace PhysicsEngine
 			///Initialise and set the customised event callback
 			my_callback = new MySimulationEventCallback();
 			px_scene->setSimulationEventCallback(my_callback);
+			px_scene->setFlag(PxSceneFlag::eENABLE_CCD, true);
 
 			// actor 1 plane
 			plane = new Plane();
@@ -249,14 +253,14 @@ namespace PhysicsEngine
 			Add(base);
 
 			// actor 3 ball
-			ball = new Sphere(PxTransform(PxVec3(-8.0f,12.0f, 7.0f), PxQuat(PxIdentity)), 0.25f);
-			ball->Material(GetMaterial(6));
+			ball = new Sphere(PxTransform(PxVec3(-8.0f,12.0f, 9.0f), PxQuat(PxIdentity)), 0.3f);
+			ball->Material(GetMaterial(3));
 			ball->Color(color_palette[1]);
-			Add(ball);
-			
+			Add(ball);			
+			ball->Get()->isRigidBody()->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
 
 			// actor 4 left paddle
-			padL = new Wedge(4.0f, 1.0f, 0.5f, PxTransform(PxVec3(-12.0f, 6.0f, -5.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))), 1.0f);
+			padL = new Wedge(4.0f, 1.5f, 1.f, PxTransform(PxVec3(-12.0f, 6.0f, -5.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))), 1.0f);
 			padL->mesh->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
 			padL->mesh->Color(color_palette[2]);
 			padL->mesh->SetKinematic(false); 
@@ -265,7 +269,7 @@ namespace PhysicsEngine
 			LPjoint->SetLimits(-PxPi/6, PxPi/6);
 
 			// actor 5 right paddle
-			padR = new Wedge(4.0f, 1.0f, 0.5f, PxTransform(PxVec3(-12.0f, 6.0f, 5.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))));
+			padR = new Wedge(4.0f, 1.5f, 1.f, PxTransform(PxVec3(-12.0f, 6.0f, 5.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))));
 			padR->mesh->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(-PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
 			padR->mesh->Color(color_palette[2]);
 			padR->mesh->SetKinematic(false);
@@ -274,7 +278,7 @@ namespace PhysicsEngine
 			RPjoint->SetLimits(-PxPi/6, PxPi / 6);
 
 			// actor 6 and 7 bottom and top respective plunger components
-			plunger = new Trampoline(PxVec3(.5f, 2.0f, .5f), 100.0f, 10.0f, PxTransform(PxVec3(-12.0f, 6.0f, 7.0f), PxQuat(-PxPi / 3, PxVec3(0.0f, 0.0f, 1.0f))), PxTransform(PxVec3(-12.0f, 6.0f, 8.0f), PxQuat(-PxPi / 3, PxVec3(0.0f, 0.0f, 1.0f))));
+			plunger = new Trampoline(PxVec3(.5f, 0.5f, 0.5f), 100.0f, 10.0f, PxTransform(PxVec3(-12.0f, 6.0f, 9.0f), PxQuat(-PxPi / 3, PxVec3(0.0f, 0.0f, 1.0f))), PxTransform(PxVec3(-12.0f, 6.0f, 9.0f), PxQuat(-PxPi / 3, PxVec3(0.0f, 0.0f, 1.0f))));
 			plunger->AddToScene(this);
 
 			walls = new Walls(PxTransform(PxVec3(PxIdentity), PxQuat(PxPi/6, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(20.0f, 2.0f, 0.5f));
@@ -289,29 +293,52 @@ namespace PhysicsEngine
 			Add(spinner->mesh);
 			spinnerJoint = new RevoluteJoint(base, PxTransform(PxVec3(11.f, 0.5f, 0.f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), spinner->mesh, PxTransform(PxVec3(0.0f, 0.f, 0.0f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));		
 
-			topR = new Wedge(4.0f, 2.0f, 1.0f, PxTransform(PxVec3(12.0f, 19.0f, 8.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))), 0.1f);
-			topR->mesh->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(-PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
+			topR = new Dimond(2.0f, 1.0f, 1.0f, PxTransform(PxVec3(8.0f, 14.0f, 6.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))), 0.5f);
+			topR->mesh->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
 			Add(topR->mesh);
-			TRjoint = new RevoluteJoint(topR->mesh, PxTransform(PxVec3(1.0f, 0.f, -0.5f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))), base, PxTransform(PxVec3(12.f, 0.0f, 8.f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))));
-			TRjoint->SetLimits(-PxPi / 6, PxPi / 6);			
+			TRjoint = new RevoluteJoint(base, PxTransform(PxVec3(8.0f, 0.0f, 6.0f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), topR->mesh, PxTransform(PxVec3(0.5f, -1.f, 0.0f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
 
-			topL = new Wedge(4.0f, 2.0f, 1.0f, PxTransform(PxVec3(12.0f, 19.0f, -8.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))), 0.1f);
+			topL = new Dimond(2.0f, 1.0f, 1.0f, PxTransform(PxVec3(8.0f, 14.0f, -6.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))), 0.5f);
 			topL->mesh->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
 			Add(topL->mesh);
-			TLjoint = new RevoluteJoint(base, PxTransform(PxVec3(12.f, 1.0f, -8.f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), topL->mesh, PxTransform(PxVec3(1.0f, 0.f, 0.5f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
-			TLjoint->SetLimits(-PxPi / 6, PxPi / 6);
+			TLjoint = new RevoluteJoint(base, PxTransform(PxVec3(8.0f, 1.0f, -6.0f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), topL->mesh, PxTransform(PxVec3(0.5f, 0.f, 0.0f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
+
+			box1 = new Box(PxTransform(PxVec3(13.0f, 20.0f, -8.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(4.0f, 1.0f, 0.5f));
+			box1->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(-PxPi / 4, PxVec3(0.0f, 1.0f, 0.0f))));
+			box1->SetKinematic(true);
+			Add(box1);
+
+			box2 = new Box(PxTransform(PxVec3(13.0f, 20.0f, 8.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(4.0f, 1.0f, 0.5f));
+			box2->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(PxPi / 4, PxVec3(0.0f, 1.0f, 0.0f))));
+			box2->SetKinematic(true);
+			Add(box2);
+
+			box3 = new Box(PxTransform(PxVec3(-8.0f, 8.0f, -8.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(3.0f, 1.0f, 0.5f));
+			box3->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(PxPi / 3, PxVec3(0.0f, 1.0f, 0.0f))));
+			box3->SetKinematic(true);
+			Add(box3);
+
+			box4 = new Box(PxTransform(PxVec3(-9.0f, 8.0f, 7.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(1.25f, 1.0f, 0.5f));
+			box4->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(-PxPi / 3, PxVec3(0.0f, 1.0f, 0.0f))));
+			box4->SetKinematic(true);
+			Add(box4);
+
+			box5 = new Box(PxTransform(PxVec3(-5.0f, 10.0f, 8.0f), PxQuat(PxPi / 6, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(12.f, 1.0f, 0.5f));
+
+			box5->SetKinematic(true);
+			Add(box5);
 		}
 
 		//Custom udpate function
 		virtual void CustomUpdate() 
 		{
 			spinnerJoint->DriveVelocity(10.0f);
-			TRjoint->DriveVelocity(-1.0f);
-			
+			//TRjoint->DriveVelocity(-1.0f);
+
 			if (pullSpring)
 			{
 				springStr += 2.0f;
-				if (springStr >= 100.0f) { springStr = 200.0f; }
+				if (springStr >= 200.0f) { springStr = 200.0f; }
 				//this->SelectActor(5);			
 				//PxTransform current = this->GetSelectedActor()->getGlobalPose();
 				//PxVec3 vec = PxVec3(current.p.x - 0.01f, current.p.y - 0.02f, current.p.z);
