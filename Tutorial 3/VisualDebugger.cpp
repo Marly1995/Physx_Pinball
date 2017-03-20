@@ -101,14 +101,11 @@ namespace VisualDebugger
 		hud.AddLine(HELP, "    F5 - help on/off");
 		hud.AddLine(HELP, "    F6 - shadows on/off");
 		hud.AddLine(HELP, "    F7 - render mode");
-		hud.AddLine(HELP, "");
-		hud.AddLine(HELP, " Camera");
-		hud.AddLine(HELP, "    W,S,A,D,Q,Z - forward,backward,left,right,up,down");
-		hud.AddLine(HELP, "    mouse + click - change orientation");
 		hud.AddLine(HELP, "    F8 - reset view");
 		hud.AddLine(HELP, "");
-		hud.AddLine(HELP, " Force (applied to the selected actor)");
-		hud.AddLine(HELP, "    I,K,J,L,U,M - forward,backward,left,right,up,down");
+		hud.AddLine(HELP, "SCORE:");
+		hud.AddLine(HELP, "");
+
 		//add a pause screen
 		hud.AddLine(PAUSE, "");
 		hud.AddLine(PAUSE, "");
@@ -147,6 +144,8 @@ namespace VisualDebugger
 				Renderer::Render(&actors[0], (PxU32)actors.size());
 		}
 
+		int score = scene->GetScore();
+		hud.AmendLine(HELP, to_string(score));
 		//adjust the HUD state
 		if (hud_show)
 		{
@@ -253,21 +252,6 @@ namespace VisualDebugger
 			// Force controls on the selected actor
 		case 'I': //forward
 			scene->GetSelectedActor()->addForce(PxVec3(0,0,-1)*gForceStrength);
-			break;
-		case 'K': //backward
-			scene->GetSelectedActor()->addForce(PxVec3(0,0,1)*gForceStrength);
-			break;
-		case 'J': //left
-			scene->GetSelectedActor()->addForce(PxVec3(-1,0,0)*gForceStrength);
-			break;
-		case 'L': //right
-			scene->GetSelectedActor()->addForce(PxVec3(1,0,0)*gForceStrength);
-			break;
-		case 'U': //up
-			scene->GetSelectedActor()->addForce(PxVec3(0,1,0)*gForceStrength);
-			break;
-		case 'M': //down
-			scene->GetSelectedActor()->addForce(PxVec3(0,-1,0)*gForceStrength);
 			break;
 		default:
 			break;

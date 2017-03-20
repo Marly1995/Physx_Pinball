@@ -13,6 +13,7 @@ namespace PhysicsEngine
 	static const PxVec3 color_palette[] = {PxVec3(46.f/255.f,9.f/255.f,39.f/255.f),PxVec3(217.f/255.f,0.f/255.f,0.f/255.f),
 		PxVec3(255.f/255.f,45.f/255.f,0.f/255.f),PxVec3(255.f/255.f,140.f/255.f,54.f/255.f),PxVec3(4.f/255.f,117.f/255.f,111.f/255.f)};
 
+	static int score = 0;
 	//pyramid vertices
 	static PxVec3 pyramid_verts[] = {PxVec3(0,1,0), PxVec3(1,0,0), PxVec3(-1,0,0), PxVec3(0,0,1), PxVec3(0,0,-1)};
 	//pyramid triangles: a list of three vertices for each triangle e.g. the first triangle consists of vertices 1, 4 and 0
@@ -145,7 +146,10 @@ namespace PhysicsEngine
 					cerr << "tits" << endl;
 					break;
 				case FilterGroup::ACTOR1:
-					cerr << "butts" << endl;
+					score += 10;
+					break;
+				case FilterGroup::ACTOR2:
+					score += 5;
 					break;
 				}
 			}
@@ -270,6 +274,7 @@ namespace PhysicsEngine
 			Add(ball);			
 			ball->Get()->isRigidBody()->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
 			ball->SetupFiltering(FilterGroup::ACTOR0, FilterGroup::ACTOR1);
+			ball->SetupFiltering(FilterGroup::ACTOR0, FilterGroup::ACTOR2);
 
 			// actor 4 left paddle
 			padL = new Wedge(4.0f, 1.5f, 1.f, PxTransform(PxVec3(-12.0f, 6.0f, -5.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), 1.0f);
@@ -279,6 +284,7 @@ namespace PhysicsEngine
 			Add(padL->mesh);
 			LPjoint = new RevoluteJoint(base, PxTransform(PxVec3(-12.f, 1.f, -5.f), PxQuat(PxPi/2, PxVec3(0.f, 0.f, 1.f))), padL->mesh, PxTransform(PxVec3(0.5f, 0.f, 0.5f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
 			LPjoint->SetLimits(-PxPi/6, PxPi/6);
+			padL->mesh->SetupFiltering(FilterGroup::ACTOR2, FilterGroup::ACTOR0);
 
 			// actor 5 right paddle
 			padR = new Wedge(4.0f, 1.5f, 1.f, PxTransform(PxVec3(-12.0f, 6.0f, 5.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))));
@@ -288,6 +294,7 @@ namespace PhysicsEngine
 			Add(padR->mesh);
 			RPjoint = new RevoluteJoint(base, PxTransform(PxVec3(-12.f, 0.5f, 5.f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), padR->mesh, PxTransform(PxVec3(0.5f, 0.f, -0.5f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
 			RPjoint->SetLimits(-PxPi/6, PxPi / 6);
+			padR->mesh->SetupFiltering(FilterGroup::ACTOR2, FilterGroup::ACTOR0);
 
 			// actor 6 and 7 bottom and top respective plunger components
 			plunger = new Trampoline(PxVec3(.5f, 0.5f, 0.5f), 100.0f, 10.0f, PxTransform(PxVec3(-12.0f, 6.0f, 9.0f), PxQuat(-tableAngle*2, PxVec3(0.0f, 0.0f, 1.0f))), PxTransform(PxVec3(-12.0f, 6.0f, 9.0f), PxQuat(-tableAngle*2, PxVec3(0.0f, 0.0f, 1.0f))));
@@ -356,6 +363,11 @@ namespace PhysicsEngine
 				//PxVec3 vec = PxVec3(current.p.x - 0.01f, current.p.y - 0.02f, current.p.z);
 				//this->GetSelectedActor()->setGlobalPose(PxTransform(vec, current.q));				
 			}
+		}
+
+		virtual int GetScore()
+		{
+			return score;
 		}
 
 		void KeyPressR()
