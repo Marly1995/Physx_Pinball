@@ -143,7 +143,7 @@ namespace PhysicsEngine
 				switch (pairs[i].shapes[0]->getSimulationFilterData().word0)
 				{
 				case FilterGroup::ACTOR0:
-					cerr << "tits" << endl;
+					score += 10;
 					break;
 				case FilterGroup::ACTOR1:
 					score += 10;
@@ -240,7 +240,7 @@ namespace PhysicsEngine
 			SetVisualisation();			
 			CreateMaterial(0.94, 0.40, 0.1);
 			CreateMaterial(1.10, 0.15, 0.2);
-			CreateMaterial(0.25, 0.1, 0.4);
+			CreateMaterial(0.25, 0.10, 0.4);
 			CreateMaterial(0.78, 0.42, 0.2);
 			CreateMaterial(0.04, 0.04, 0.1);
 			CreateMaterial(0.38, 0.20, 0.4);
@@ -273,8 +273,7 @@ namespace PhysicsEngine
 			ball->Color(color_palette[1]);
 			Add(ball);			
 			ball->Get()->isRigidBody()->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
-			ball->SetupFiltering(FilterGroup::ACTOR0, FilterGroup::ACTOR1);
-			ball->SetupFiltering(FilterGroup::ACTOR0, FilterGroup::ACTOR2);
+			ball->SetupFiltering(FilterGroup::ACTOR0, FilterGroup::ACTOR1 | FilterGroup::ACTOR2);
 
 			// actor 4 left paddle
 			padL = new Wedge(4.0f, 1.5f, 1.f, PxTransform(PxVec3(-12.0f, 6.0f, -5.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), 1.0f);
