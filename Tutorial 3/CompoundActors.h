@@ -96,8 +96,8 @@ namespace PhysicsEngine
 		{
 			CreateShape(PxBoxGeometry(dimensions), density);
 			CreateShape(PxBoxGeometry(dimensions), density);
-			CreateShape(PxBoxGeometry(PxVec3(dimensions.z, dimensions.y, dimensions.x/2)), density);
-			CreateShape(PxBoxGeometry(PxVec3(dimensions.z, dimensions.y, dimensions.x/2)), density);
+			CreateShape(PxBoxGeometry(PxVec3(dimensions.z, dimensions.y, 2.0f+dimensions.x/2)), density);
+			CreateShape(PxBoxGeometry(PxVec3(dimensions.z, dimensions.y, 2.0f+dimensions.x/2)), density);
 		}
 	};
 
