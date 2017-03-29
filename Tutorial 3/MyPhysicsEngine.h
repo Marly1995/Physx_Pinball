@@ -211,8 +211,8 @@ namespace PhysicsEngine
 		Wedge *padL, *padR;
 		RevoluteJoint *LPjoint, *RPjoint;
 
-		Hexagon *spinner;
-		RevoluteJoint *spinnerJoint;
+		Hexagon *spinner1, *spinner2;
+		RevoluteJoint *spinnerJoint1, *spinnerJoint2;
 
 		Dimond *topL, *topR;
 		RevoluteJoint *TLjoint, *TRjoint;
@@ -309,10 +309,15 @@ namespace PhysicsEngine
 			walls->SetKinematic(true);
 			Add(walls);
 
-			spinner = new Hexagon(.5f, 2.0f, PxTransform(PxVec3(10.0f, 16.0f, 0.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))));
-			Add(spinner->mesh);
-			spinnerJoint = new RevoluteJoint(base, PxTransform(PxVec3(11.f, 0.5f, -1.5f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), spinner->mesh, PxTransform(PxVec3(0.0f, 0.f, 0.0f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));	
-			spinner->mesh->SetupFiltering(FilterGroup::ACTOR1, FilterGroup::ACTOR0);
+			spinner1 = new Hexagon(.5f, 2.0f, PxTransform(PxVec3(10.0f, 16.0f, -4.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))));
+			Add(spinner1->mesh);
+			spinnerJoint1 = new RevoluteJoint(base, PxTransform(PxVec3(11.f, 0.5f, -5.5f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), spinner1->mesh, PxTransform(PxVec3(0.0f, 0.f, 0.0f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));	
+			spinner1->mesh->SetupFiltering(FilterGroup::ACTOR1, FilterGroup::ACTOR0);
+
+			spinner2 = new Hexagon(.5f, 2.0f, PxTransform(PxVec3(10.0f, 16.0f, 4.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))));
+			Add(spinner2->mesh);
+			spinnerJoint2 = new RevoluteJoint(base, PxTransform(PxVec3(11.f, 0.5f, 2.5f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), spinner2->mesh, PxTransform(PxVec3(0.0f, 0.f, 0.0f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
+			spinner2->mesh->SetupFiltering(FilterGroup::ACTOR1, FilterGroup::ACTOR0);
 
 			topR = new Dimond(2.0f, 1.0f, 1.0f, PxTransform(PxVec3(8.0f, 14.0f, 6.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), 0.5f);
 			topR->mesh->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
@@ -349,13 +354,14 @@ namespace PhysicsEngine
 			Add(box5);
 
 			flap = new Box(PxTransform(PxVec3(8.0f, 17.0f, 11.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(2.5f, 1.0f, 0.2f), 0.1f);
-			
+			LPjoint->DriveVelocity(-10.0f);
 		}
 
 		//Custom udpate function
 		virtual void CustomUpdate() 
 		{
-			spinnerJoint->DriveVelocity(10.0f);
+			spinnerJoint1->DriveVelocity(10.0f);
+			spinnerJoint2->DriveVelocity(-10.0f);
 
 			if (pullSpring)
 			{
