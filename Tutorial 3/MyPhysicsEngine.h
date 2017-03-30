@@ -94,6 +94,8 @@ namespace PhysicsEngine
 	public:
 		//an example variable that will be checked in the main simulation loop
 		bool trigger;
+		bool closeflap = false;
+		bool death = false;
 
 		MySimulationEventCallback() : trigger(false) {}
 
@@ -106,6 +108,17 @@ namespace PhysicsEngine
 				//filter out contact with the planes
 				if (pairs[i].otherShape->getGeometryType() != PxGeometryType::ePLANE)
 				{
+
+				if(pairs[i].triggerShape->getName() == "flap" &&
+					pairs[i].otherShape->getName() == "ball")
+				{
+					closeflap = true;
+				}
+				if (pairs[i].triggerShape->getName() == "death" &&
+					pairs[i].otherShape->getName() == "ball")
+				{
+					death = true;
+				}
 					//check if eNOTIFY_TOUCH_FOUND trigger
 					if (pairs[i].status & PxPairFlag::eNOTIFY_TOUCH_FOUND)
 					{
@@ -208,8 +221,8 @@ namespace PhysicsEngine
 		bool pullSpring = false;
 		float springStr = 0.0f;
 
-		Wedge *padL, *padR;
-		RevoluteJoint *LPjoint, *RPjoint;
+		Wedge *padL, *padR, *padL2;
+		RevoluteJoint *LPjoint, *LPjoint2, *RPjoint;
 
 		Hexagon *spinner1, *spinner2;
 		RevoluteJoint *spinnerJoint1, *spinnerJoint2;
@@ -220,9 +233,11 @@ namespace PhysicsEngine
 		Box *box1, *box2, *box3, *box4, *box5;
 
 		Box *flap;
-		RevoluteJoint * flapjoint;
+		RevoluteJoint *flapjoint;
 
 		Capsule *left, *top, *right;
+
+		StaticBox * flapTrigger, *deathTrigger;
 		
 	public:
 		//specify your custom filter shader here
@@ -278,6 +293,7 @@ namespace PhysicsEngine
 			ball = new Sphere(PxTransform(PxVec3(-8.0f,12.0f, 12.0f), PxQuat(PxIdentity)), 0.3f);
 			ball->Material(GetMaterial(3));
 			ball->Color(color_palette[4]);
+			ball->GetShape()->setName("ball");
 			Add(ball);			
 			ball->Get()->isRigidBody()->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
 			ball->SetupFiltering(FilterGroup::ACTOR0, FilterGroup::ACTOR1 | FilterGroup::ACTOR2);
@@ -291,6 +307,15 @@ namespace PhysicsEngine
 			LPjoint = new RevoluteJoint(base, PxTransform(PxVec3(-16.f, 1.f, -6.f), PxQuat(PxPi/2, PxVec3(0.f, 0.f, 1.f))), padL->mesh, PxTransform(PxVec3(0.5f, 0.f, 0.5f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
 			LPjoint->SetLimits(-PxPi/6, PxPi/6);
 			padL->mesh->SetupFiltering(FilterGroup::ACTOR2, FilterGroup::ACTOR0);
+
+			padL2 = new Wedge(4.0f, 1.5f, 1.f, PxTransform(PxVec3(-16.0f, 4.0f, -5.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), 1.0f);
+			padL2->mesh->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
+			padL2->mesh->Color(color_palette[2]);
+			padL2->mesh->SetKinematic(false);
+			Add(padL2->mesh);
+			LPjoint2 = new RevoluteJoint(base, PxTransform(PxVec3(10.f, 1.f, -10.f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), padL2->mesh, PxTransform(PxVec3(0.5f, 0.f, 0.5f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
+			LPjoint2->SetLimits(-PxPi/2, -PxPi/4);
+			padL2->mesh->SetupFiltering(FilterGroup::ACTOR2, FilterGroup::ACTOR0);
 
 			// actor 5 right paddle
 			padR = new Wedge(4.0f, 1.5f, 1.f, PxTransform(PxVec3(-16.0f, 4.0f, 4.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))));
@@ -377,12 +402,33 @@ namespace PhysicsEngine
 			}
 
 			flap = new Box(PxTransform(PxVec3(8.0f, 17.0f, 11.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(1.5f, 1.0f, 0.2f), 0.1f);
-			flapjoint = new RevoluteJoint(base, PxTransform(PxVec3(9.f, 1.5f, 8.f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), flap, PxTransform(PxVec3(0.0f, 0.f, 0.0f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
+			flapjoint = new RevoluteJoint(base, PxTransform(PxVec3(9.f, 1.5f, 8.5f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), flap, PxTransform(PxVec3(1.0f, 0.f, 0.0f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
 			Add(flap);
+
+			flapTrigger = new StaticBox(PxTransform(PxVec3(8.0f, 17.0f, 12.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(1.0f, 1.0f, 1.0f), 0.1f);
+			flapTrigger->SetTrigger(true);
+			flapTrigger->GetShape()->setName("flap");
+			Add(flapTrigger);
+
+			deathTrigger = new StaticBox(PxTransform(PxVec3(-17.0f, 4.0f, 0.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(0.5f, 1.0f, 10.0f), 0.1f);
+			deathTrigger->SetTrigger(true);
+			deathTrigger->GetShape()->setName("death");
+			Add(deathTrigger);
 
 			LPjoint->DriveVelocity(-10.0f);
 		}
 
+		virtual void resetBall()
+		{
+			ball = new Sphere(PxTransform(PxVec3(-8.0f, 12.0f, 12.0f), PxQuat(PxIdentity)), 0.3f);
+			ball->Material(GetMaterial(3));
+			ball->Color(color_palette[4]);
+			ball->GetShape()->setName("ball");
+			Add(ball);
+			ball->Get()->isRigidBody()->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
+			ball->SetupFiltering(FilterGroup::ACTOR0, FilterGroup::ACTOR1 | FilterGroup::ACTOR2);
+			flapjoint->DriveVelocity(10.0f);
+		}
 		//Custom udpate function
 		virtual void CustomUpdate() 
 		{
@@ -398,6 +444,18 @@ namespace PhysicsEngine
 				//PxVec3 vec = PxVec3(current.p.x - 0.01f, current.p.y - 0.02f, current.p.z);
 				//this->GetSelectedActor()->setGlobalPose(PxTransform(vec, current.q));				
 			}
+
+			if (my_callback->closeflap == true)
+			{
+				my_callback->closeflap = false;
+				flapjoint->DriveVelocity(-10.0f);
+			}
+			if (my_callback->death == true)
+			{
+				my_callback->death = false;
+				resetBall();
+			}
+
 		}
 
 		virtual int GetScore()
@@ -417,10 +475,12 @@ namespace PhysicsEngine
 		void KeyPressE()
 		{
 			LPjoint->DriveVelocity(10.0f);
+			LPjoint2->DriveVelocity(10.0f);
 		}
 		void KeyReleaseE()
 		{
 			LPjoint->DriveVelocity(-10.0f);
+			LPjoint2->DriveVelocity(-10.0f);
 		}
 
 		void KeyPressL()
@@ -432,7 +492,7 @@ namespace PhysicsEngine
 		void KeyReleaseL()
 		{
 			pullSpring = false;
-			this->SelectActor(5);
+			this->SelectActor(6);
 			this->GetSelectedActor()->addForce(PxVec3(2.0f, 1.0f, 0.0f) * springStr);			
 			springStr = 0.0f;
 			//plunger->top->SetKinematic(false);
