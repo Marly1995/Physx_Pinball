@@ -15,7 +15,7 @@ namespace PhysicsEngine
 	
 	static bool playing = false;
 	static int score = 0;
-	static int extraBall = 0;
+	static int extraLife = 0;
 	static int lives = 0;
 	//pyramid vertices
 	static PxVec3 pyramid_verts[] = {PxVec3(0,1,0), PxVec3(1,0,0), PxVec3(-1,0,0), PxVec3(0,0,1), PxVec3(0,0,-1)};
@@ -45,9 +45,12 @@ namespace PhysicsEngine
 	{
 		enum Enum
 		{
-			ACTOR0		= (1 << 0),
-			ACTOR1		= (1 << 1),
-			ACTOR2		= (1 << 2)
+			PLAYER		= (1 << 0),
+			SCORE1		= (1 << 1),
+			SCORE2		= (1 << 2),
+			SCORE3		= (2 << 3),
+			SCORE4		= (3 << 4),
+			SCORE5		= (4 << 5)
 			//add more if you need
 		};
 	};
@@ -158,13 +161,22 @@ namespace PhysicsEngine
 				//}
 				switch (pairs[i].shapes[0]->getSimulationFilterData().word0)
 				{
-				case FilterGroup::ACTOR0:
+				case FilterGroup::PLAYER:
 					score += 100;
 					break;
-				case FilterGroup::ACTOR1:
+				case FilterGroup::SCORE1:
+					score += 1000;
+					break;
+				case FilterGroup::SCORE2:
+					score += 500;
+					break;
+				case FilterGroup::SCORE3:
+					score += 200;
+					break;
+				case FilterGroup::SCORE4:
 					score += 100;
 					break;
-				case FilterGroup::ACTOR2:
+				case FilterGroup::SCORE5:
 					score += 50;
 					break;
 				}
@@ -215,7 +227,7 @@ namespace PhysicsEngine
 	{
 		MySimulationEventCallback* my_callback;
 		Plane* plane;
-		Box* base;
+		Box* base, *roof;
 		Sphere* ball;
 		Walls *walls;
 
@@ -295,6 +307,13 @@ namespace PhysicsEngine
 			base->SetKinematic(true);
 			Add(base);
 
+			roof = new Box(PxTransform(PxVec3(-2.0f, 18.0f, 2.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(20.0f, 0.5f, 13.0f));
+			roof->Color(color_palette[0]);
+			roof->Material(GetMaterial(6));
+			roof->SetKinematic(true);
+			roof->GetShape()->setFlag(PxShapeFlag::eVISUALIZATION, false);
+			Add(roof);
+
 			// actor 3 ball
 			ball = new Sphere(PxTransform(PxVec3(-8.0f,12.0f, 12.0f), PxQuat(PxIdentity)), 0.3f);
 			ball->Material(GetMaterial(3));
@@ -302,7 +321,7 @@ namespace PhysicsEngine
 			ball->GetShape()->setName("ball");
 			Add(ball);			
 			ball->Get()->isRigidBody()->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
-			ball->SetupFiltering(FilterGroup::ACTOR0, FilterGroup::ACTOR1 | FilterGroup::ACTOR2);
+			ball->SetupFiltering(FilterGroup::PLAYER, FilterGroup::SCORE1 | FilterGroup::SCORE2 | FilterGroup::SCORE3 | FilterGroup::SCORE4 | FilterGroup::SCORE5);
 
 			// actor 4 left paddle
 			padL = new Wedge(4.0f, 1.5f, 1.f, PxTransform(PxVec3(-16.0f, 4.0f, -5.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), 1.0f);
@@ -313,7 +332,7 @@ namespace PhysicsEngine
 			Add(padL->mesh);
 			LPjoint = new RevoluteJoint(base, PxTransform(PxVec3(-16.f, 1.f, -6.f), PxQuat(PxPi/2, PxVec3(0.f, 0.f, 1.f))), padL->mesh, PxTransform(PxVec3(0.5f, 0.f, 0.5f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
 			LPjoint->SetLimits(-PxPi/6, PxPi/6);
-			padL->mesh->SetupFiltering(FilterGroup::ACTOR2, FilterGroup::ACTOR0);
+			padL->mesh->SetupFiltering(FilterGroup::SCORE5, FilterGroup::PLAYER);
 
 			padL2 = new Wedge(4.0f, 1.5f, 1.f, PxTransform(PxVec3(-16.0f, 4.0f, -5.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), 1.0f);
 			padL2->mesh->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
@@ -322,7 +341,7 @@ namespace PhysicsEngine
 			Add(padL2->mesh);
 			LPjoint2 = new RevoluteJoint(base, PxTransform(PxVec3(10.f, 1.f, -10.f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), padL2->mesh, PxTransform(PxVec3(0.5f, 0.f, 0.5f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
 			LPjoint2->SetLimits(-PxPi/2, -PxPi/4);
-			padL2->mesh->SetupFiltering(FilterGroup::ACTOR2, FilterGroup::ACTOR0);
+			padL2->mesh->SetupFiltering(FilterGroup::SCORE4, FilterGroup::PLAYER);
 
 			// actor 5 right paddle
 			padR = new Wedge(4.0f, 1.5f, 1.f, PxTransform(PxVec3(-16.0f, 4.0f, 4.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))));
@@ -334,7 +353,7 @@ namespace PhysicsEngine
 			RPjoint = new RevoluteJoint(base, PxTransform(PxVec3(-16.f, 0.5f, 3.f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), padR->mesh, PxTransform(PxVec3(0.5f, 0.f, -0.5f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
 			RPjoint->SetLimits(-PxPi/6, PxPi / 6);
 			RPjoint->DriveVelocity(10.0f);
-			padR->mesh->SetupFiltering(FilterGroup::ACTOR2, FilterGroup::ACTOR0);
+			padR->mesh->SetupFiltering(FilterGroup::SCORE5, FilterGroup::PLAYER);
 
 			// actor 6 and 7 bottom and top respective plunger components
 			plunger = new Trampoline(PxVec3(.5f, 0.5f, 0.5f), 100.0f, 10.0f, PxTransform(PxVec3(-12.0f, 6.0f, 12.0f), PxQuat(-tableAngle*2, PxVec3(0.0f, 0.0f, 1.0f))), PxTransform(PxVec3(-12.0f, 6.0f, 12.0f), PxQuat(-tableAngle*2, PxVec3(0.0f, 0.0f, 1.0f))));
@@ -351,39 +370,43 @@ namespace PhysicsEngine
 			spinner1 = new Hexagon(.5f, 2.0f, PxTransform(PxVec3(10.0f, 16.0f, -4.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))));
 			Add(spinner1->mesh);
 			spinnerJoint1 = new RevoluteJoint(base, PxTransform(PxVec3(6.f, 0.5f, -4.5f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), spinner1->mesh, PxTransform(PxVec3(0.0f, 0.f, 0.0f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));	
-			spinner1->mesh->SetupFiltering(FilterGroup::ACTOR1, FilterGroup::ACTOR0);
+			spinner1->mesh->SetupFiltering(FilterGroup::SCORE2, FilterGroup::PLAYER);
 
 			spinner2 = new Hexagon(.5f, 2.0f, PxTransform(PxVec3(10.0f, 16.0f, 4.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))));
 			Add(spinner2->mesh);
 			spinnerJoint2 = new RevoluteJoint(base, PxTransform(PxVec3(6.f, 0.5f, 1.5f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), spinner2->mesh, PxTransform(PxVec3(0.0f, 0.f, 0.0f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
-			spinner2->mesh->SetupFiltering(FilterGroup::ACTOR1, FilterGroup::ACTOR0);
+			spinner2->mesh->SetupFiltering(FilterGroup::SCORE2, FilterGroup::PLAYER);
 
 			top = new Capsule(PxTransform(PxVec3(13.0f, 20.0f, 0.5f), PxQuat(tableAngle+PxHalfPi, PxVec3(0.0f, 0.0f, 1.0f))), PxVec2(1.0f, 1.0f));
 			top->SetKinematic(true);
 			top->Material(GetMaterial(9));
 			Add(top);
+			top->SetupFiltering(FilterGroup::SCORE1, FilterGroup::PLAYER);
 
 			left = new Capsule(PxTransform(PxVec3(9.0f, 17.5f, 3.5f), PxQuat(tableAngle + PxHalfPi, PxVec3(0.0f, 0.0f, 1.0f))), PxVec2(1.0f, 1.0f));
 			left->SetKinematic(true);
 			left->Material(GetMaterial(9));
 			Add(left);
+			left->SetupFiltering(FilterGroup::SCORE1, FilterGroup::PLAYER);
 
 			right = new Capsule(PxTransform(PxVec3(9.0f, 17.5f, -2.5f), PxQuat(tableAngle + PxHalfPi, PxVec3(0.0f, 0.0f, 1.0f))), PxVec2(1.0f, 1.0f));
 			right->SetKinematic(true);
 			right->Material(GetMaterial(9));
 			Add(right);
+			right->SetupFiltering(FilterGroup::SCORE1, FilterGroup::PLAYER);
 
 			topR = new Dimond(2.0f, 1.0f, 1.0f, PxTransform(PxVec3(8.0f, 14.0f, 6.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), 0.5f);
 			topR->mesh->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
 			Add(topR->mesh);
 			TRjoint = new RevoluteJoint(base, PxTransform(PxVec3(2.0f, 0.0f, 4.5f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), topR->mesh, PxTransform(PxVec3(0.5f, -1.f, 0.0f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
+			topR->mesh->SetupFiltering(FilterGroup::SCORE3, FilterGroup::PLAYER);
 
 			topL = new Dimond(2.0f, 1.0f, 1.0f, PxTransform(PxVec3(8.0f, 14.0f, -6.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), 0.5f);
 			topL->mesh->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
 			Add(topL->mesh);
 			TLjoint = new RevoluteJoint(base, PxTransform(PxVec3(2.0f, 1.0f, -7.5f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), topL->mesh, PxTransform(PxVec3(0.5f, 0.f, 0.0f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
+			topL->mesh->SetupFiltering(FilterGroup::SCORE3, FilterGroup::PLAYER);
 
-			{
 			box1 = new Box(PxTransform(PxVec3(13.0f, 20.0f, -8.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(4.0f, 1.0f, 0.5f));
 			box1->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(-PxPi / 4, PxVec3(0.0f, 1.0f, 0.0f))));
 			box1->SetKinematic(true);
@@ -407,7 +430,6 @@ namespace PhysicsEngine
 			box5 = new Box(PxTransform(PxVec3(-5.0f, 10.0f, 11.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(14.f, 1.0f, 0.5f));
 			box5->SetKinematic(true);
 			Add(box5);
-			}
 
 			flap = new Box(PxTransform(PxVec3(8.0f, 17.0f, 11.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(1.5f, 1.0f, 0.2f), 0.1f);
 			flapjoint = new RevoluteJoint(base, PxTransform(PxVec3(8.5f, 1.5f, 8.f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), flap, PxTransform(PxVec3(1.3f, 0.f, 0.0f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
@@ -415,11 +437,13 @@ namespace PhysicsEngine
 
 			flapTrigger = new StaticBox(PxTransform(PxVec3(8.0f, 17.0f, 12.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(1.0f, 1.0f, 1.0f), 0.1f);
 			flapTrigger->SetTrigger(true);
+			flapTrigger->GetShape()->setFlag(PxShapeFlag::eVISUALIZATION, false);
 			flapTrigger->GetShape()->setName("flap");
 			Add(flapTrigger);
 
 			deathTrigger = new StaticBox(PxTransform(PxVec3(-17.0f, 4.0f, 0.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(0.5f, 1.0f, 10.0f), 0.1f);
 			deathTrigger->SetTrigger(true);
+			deathTrigger->GetShape()->setFlag(PxShapeFlag::eVISUALIZATION, false);
 			deathTrigger->GetShape()->setName("death");
 			Add(deathTrigger);
 
@@ -435,20 +459,36 @@ namespace PhysicsEngine
 			ball->GetShape()->setName("ball");
 			Add(ball);
 			ball->Get()->isRigidBody()->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
-			ball->SetupFiltering(FilterGroup::ACTOR0, FilterGroup::ACTOR1 | FilterGroup::ACTOR2);
+			ball->SetupFiltering(FilterGroup::PLAYER, FilterGroup::SCORE1 | FilterGroup::SCORE2);
 			flapjoint->DriveVelocity(10.0f);
 		}
+
+
+		virtual void multiBall()
+		{
+			ball = new Sphere(PxTransform(PxVec3(10.0f, 20.0f, -8.0f), PxQuat(PxIdentity)), 0.3f);
+			ball->Material(GetMaterial(3));
+			ball->Color(color_palette[4]);
+			ball->GetShape()->setName("ball");
+			Add(ball);
+			ball->Get()->isRigidBody()->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
+			ball->SetupFiltering(FilterGroup::PLAYER, FilterGroup::SCORE1 | FilterGroup::SCORE2);
+		}
+
 		//Custom udpate function
 		virtual void CustomUpdate() 
 		{
 			if(playing == true)
 			{
 				score++;
-				extraBall++;
+				extraLife++;
 			}
 			
-			spinnerJoint1->DriveVelocity(10.0f);
-			spinnerJoint2->DriveVelocity(-10.0f);
+			spinnerJoint1->DriveVelocity(20.0f);
+			spinnerJoint2->DriveVelocity(-20.0f);
+
+			TRjoint->DriveVelocity(-10.0f);
+			TLjoint->DriveVelocity(10.0f);
 
 			if (pullSpring)
 			{
@@ -478,12 +518,11 @@ namespace PhysicsEngine
 			{
 				Reset();
 			}
-			if(extraBall >= 10000)
+			if(extraLife >= 10000)
 			{
-				resetBall();
-				extraBall = 0;
+				multiBall();
+				extraLife = 0;
 				lives++;
-				flapjoint->DriveVelocity(-10.0f);
 			}
 
 		}
@@ -527,7 +566,7 @@ namespace PhysicsEngine
 		void KeyReleaseL()
 		{
 			pullSpring = false;
-			this->SelectActor(6);
+			this->SelectActor(7);
 			this->GetSelectedActor()->addForce(PxVec3(2.0f, 1.0f, 0.0f) * springStr);			
 			springStr = 0.0f;
 			//plunger->top->SetKinematic(false);
