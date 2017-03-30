@@ -12,8 +12,11 @@ namespace PhysicsEngine
 	//a list of colours: Circus Palette
 	static const PxVec3 color_palette[] = {PxVec3(46.f/255.f,9.f/255.f,39.f/255.f),PxVec3(217.f/255.f,0.f/255.f,0.f/255.f),
 		PxVec3(255.f/255.f,45.f/255.f,0.f/255.f),PxVec3(255.f/255.f,140.f/255.f,54.f/255.f),PxVec3(4.f/255.f,117.f/255.f,111.f/255.f)};
-
+	
+	static bool playing = false;
 	static int score = 0;
+	static int extraBall = 0;
+	static int lives = 0;
 	//pyramid vertices
 	static PxVec3 pyramid_verts[] = {PxVec3(0,1,0), PxVec3(1,0,0), PxVec3(-1,0,0), PxVec3(0,0,1), PxVec3(0,0,-1)};
 	//pyramid triangles: a list of three vertices for each triangle e.g. the first triangle consists of vertices 1, 4 and 0
@@ -156,13 +159,13 @@ namespace PhysicsEngine
 				switch (pairs[i].shapes[0]->getSimulationFilterData().word0)
 				{
 				case FilterGroup::ACTOR0:
-					score += 10;
+					score += 100;
 					break;
 				case FilterGroup::ACTOR1:
-					score += 10;
+					score += 100;
 					break;
 				case FilterGroup::ACTOR2:
-					score += 5;
+					score += 50;
 					break;
 				}
 			}
@@ -257,6 +260,9 @@ namespace PhysicsEngine
 		//Custom scene initialisation
 		virtual void CustomInit() 
 		{
+			lives = 3;
+			score = 0;
+
 			SetVisualisation();			
 			CreateMaterial(0.94, 0.40, 0.1);
 			CreateMaterial(1.10, 0.15, 0.2);
@@ -302,7 +308,8 @@ namespace PhysicsEngine
 			padL = new Wedge(4.0f, 1.5f, 1.f, PxTransform(PxVec3(-16.0f, 4.0f, -5.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), 1.0f);
 			padL->mesh->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
 			padL->mesh->Color(color_palette[2]);
-			padL->mesh->SetKinematic(false); 
+			padL->mesh->SetKinematic(false);
+			padL->mesh->Get()->isRigidBody()->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
 			Add(padL->mesh);
 			LPjoint = new RevoluteJoint(base, PxTransform(PxVec3(-16.f, 1.f, -6.f), PxQuat(PxPi/2, PxVec3(0.f, 0.f, 1.f))), padL->mesh, PxTransform(PxVec3(0.5f, 0.f, 0.5f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
 			LPjoint->SetLimits(-PxPi/6, PxPi/6);
@@ -322,6 +329,7 @@ namespace PhysicsEngine
 			padR->mesh->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(-PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
 			padR->mesh->Color(color_palette[2]);
 			padR->mesh->SetKinematic(false);
+			padR->mesh->Get()->isRigidBody()->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
 			Add(padR->mesh);
 			RPjoint = new RevoluteJoint(base, PxTransform(PxVec3(-16.f, 0.5f, 3.f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), padR->mesh, PxTransform(PxVec3(0.5f, 0.f, -0.5f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
 			RPjoint->SetLimits(-PxPi/6, PxPi / 6);
@@ -402,7 +410,7 @@ namespace PhysicsEngine
 			}
 
 			flap = new Box(PxTransform(PxVec3(8.0f, 17.0f, 11.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(1.5f, 1.0f, 0.2f), 0.1f);
-			flapjoint = new RevoluteJoint(base, PxTransform(PxVec3(9.f, 1.5f, 8.5f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), flap, PxTransform(PxVec3(1.0f, 0.f, 0.0f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
+			flapjoint = new RevoluteJoint(base, PxTransform(PxVec3(8.5f, 1.5f, 8.f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), flap, PxTransform(PxVec3(1.3f, 0.f, 0.0f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
 			Add(flap);
 
 			flapTrigger = new StaticBox(PxTransform(PxVec3(8.0f, 17.0f, 12.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(1.0f, 1.0f, 1.0f), 0.1f);
@@ -416,6 +424,7 @@ namespace PhysicsEngine
 			Add(deathTrigger);
 
 			LPjoint->DriveVelocity(-10.0f);
+			flapjoint->DriveVelocity(1.0f);
 		}
 
 		virtual void resetBall()
@@ -432,6 +441,12 @@ namespace PhysicsEngine
 		//Custom udpate function
 		virtual void CustomUpdate() 
 		{
+			if(playing == true)
+			{
+				score++;
+				extraBall++;
+			}
+			
 			spinnerJoint1->DriveVelocity(10.0f);
 			spinnerJoint2->DriveVelocity(-10.0f);
 
@@ -449,11 +464,26 @@ namespace PhysicsEngine
 			{
 				my_callback->closeflap = false;
 				flapjoint->DriveVelocity(-10.0f);
+				playing = true;
 			}
 			if (my_callback->death == true)
 			{
 				my_callback->death = false;
 				resetBall();
+				lives--;
+				playing = false;
+			}
+
+			if(lives == 0)
+			{
+				Reset();
+			}
+			if(extraBall >= 10000)
+			{
+				resetBall();
+				extraBall = 0;
+				lives++;
+				flapjoint->DriveVelocity(-10.0f);
 			}
 
 		}
@@ -461,6 +491,11 @@ namespace PhysicsEngine
 		virtual int GetScore()
 		{
 			return score;
+		}
+
+		virtual int GetLives()
+		{
+			return lives;
 		}
 
 		void KeyPressR()

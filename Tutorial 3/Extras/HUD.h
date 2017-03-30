@@ -29,7 +29,12 @@ namespace VisualDebugger
 			content.push_back(line);
 		}
 
-		void AmendLine(string line)
+		void AmendScore(string line)
+		{
+			content[content.size() - 3] = line;
+		}
+
+		void AmendLives(string line)
 		{
 			content[content.size() - 1] = line;
 		}
@@ -77,13 +82,25 @@ namespace VisualDebugger
 			screens.back()->AddLine(line);
 		}
 
-		void AmendLine(int screen_id, string line)
+		void AmendScore(int screen_id, string line)
 		{
 			for (unsigned int i = 0; i < screens.size(); i++)
 			{
 				if (screens[i]->id == screen_id)
 				{
-					screens[i]->AmendLine(line);
+					screens[i]->AmendScore(line);
+					return;
+				}
+			}
+		}
+
+		void AmendLives(int screen_id, string line)
+		{
+			for (unsigned int i = 0; i < screens.size(); i++)
+			{
+				if (screens[i]->id == screen_id)
+				{
+					screens[i]->AmendLives(line);
 					return;
 				}
 			}

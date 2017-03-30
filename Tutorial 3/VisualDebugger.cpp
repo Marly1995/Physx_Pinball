@@ -105,6 +105,8 @@ namespace VisualDebugger
 		hud.AddLine(HELP, "");
 		hud.AddLine(HELP, "SCORE:");
 		hud.AddLine(HELP, "");
+		hud.AddLine(HELP, "LIVES:");
+		hud.AddLine(HELP, "");
 
 		//add a pause screen
 		hud.AddLine(PAUSE, "");
@@ -145,7 +147,10 @@ namespace VisualDebugger
 		}
 
 		int score = scene->GetScore();
-		hud.AmendLine(HELP, to_string(score));
+		hud.AmendScore(HELP, to_string(score));
+
+		int lives = scene->GetLives();
+		hud.AmendLives(HELP, to_string(lives));
 		//adjust the HUD state
 		if (hud_show)
 		{
