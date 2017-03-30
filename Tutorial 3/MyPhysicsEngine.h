@@ -218,7 +218,11 @@ namespace PhysicsEngine
 		RevoluteJoint *TLjoint, *TRjoint;
 
 		Box *box1, *box2, *box3, *box4, *box5;
+
 		Box *flap;
+		RevoluteJoint * flapjoint;
+
+		Capsule *left, *top, *right;
 		
 	public:
 		//specify your custom filter shader here
@@ -247,6 +251,8 @@ namespace PhysicsEngine
 			CreateMaterial(0.38, 0.20, 0.4);
 			CreateMaterial(0.10, 0.03, 0.1);
 			CreateMaterial(0.10, 0.08, 0.2);
+			// pinger
+			CreateMaterial(0.25, 0.10, 4.0);
 
 			float tableAngle = PxPi / 6;
 
@@ -311,24 +317,40 @@ namespace PhysicsEngine
 
 			spinner1 = new Hexagon(.5f, 2.0f, PxTransform(PxVec3(10.0f, 16.0f, -4.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))));
 			Add(spinner1->mesh);
-			spinnerJoint1 = new RevoluteJoint(base, PxTransform(PxVec3(11.f, 0.5f, -5.5f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), spinner1->mesh, PxTransform(PxVec3(0.0f, 0.f, 0.0f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));	
+			spinnerJoint1 = new RevoluteJoint(base, PxTransform(PxVec3(6.f, 0.5f, -4.5f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), spinner1->mesh, PxTransform(PxVec3(0.0f, 0.f, 0.0f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));	
 			spinner1->mesh->SetupFiltering(FilterGroup::ACTOR1, FilterGroup::ACTOR0);
 
 			spinner2 = new Hexagon(.5f, 2.0f, PxTransform(PxVec3(10.0f, 16.0f, 4.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))));
 			Add(spinner2->mesh);
-			spinnerJoint2 = new RevoluteJoint(base, PxTransform(PxVec3(11.f, 0.5f, 2.5f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), spinner2->mesh, PxTransform(PxVec3(0.0f, 0.f, 0.0f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
+			spinnerJoint2 = new RevoluteJoint(base, PxTransform(PxVec3(6.f, 0.5f, 1.5f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), spinner2->mesh, PxTransform(PxVec3(0.0f, 0.f, 0.0f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
 			spinner2->mesh->SetupFiltering(FilterGroup::ACTOR1, FilterGroup::ACTOR0);
+
+			top = new Capsule(PxTransform(PxVec3(13.0f, 20.0f, 0.5f), PxQuat(tableAngle+PxHalfPi, PxVec3(0.0f, 0.0f, 1.0f))), PxVec2(1.0f, 1.0f));
+			top->SetKinematic(true);
+			top->Material(GetMaterial(9));
+			Add(top);
+
+			left = new Capsule(PxTransform(PxVec3(9.0f, 17.5f, 3.5f), PxQuat(tableAngle + PxHalfPi, PxVec3(0.0f, 0.0f, 1.0f))), PxVec2(1.0f, 1.0f));
+			left->SetKinematic(true);
+			left->Material(GetMaterial(9));
+			Add(left);
+
+			right = new Capsule(PxTransform(PxVec3(9.0f, 17.5f, -2.5f), PxQuat(tableAngle + PxHalfPi, PxVec3(0.0f, 0.0f, 1.0f))), PxVec2(1.0f, 1.0f));
+			right->SetKinematic(true);
+			right->Material(GetMaterial(9));
+			Add(right);
 
 			topR = new Dimond(2.0f, 1.0f, 1.0f, PxTransform(PxVec3(8.0f, 14.0f, 6.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), 0.5f);
 			topR->mesh->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
 			Add(topR->mesh);
-			TRjoint = new RevoluteJoint(base, PxTransform(PxVec3(8.0f, 0.0f, 4.5f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), topR->mesh, PxTransform(PxVec3(0.5f, -1.f, 0.0f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
+			TRjoint = new RevoluteJoint(base, PxTransform(PxVec3(2.0f, 0.0f, 4.5f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), topR->mesh, PxTransform(PxVec3(0.5f, -1.f, 0.0f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
 
 			topL = new Dimond(2.0f, 1.0f, 1.0f, PxTransform(PxVec3(8.0f, 14.0f, -6.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), 0.5f);
 			topL->mesh->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
 			Add(topL->mesh);
-			TLjoint = new RevoluteJoint(base, PxTransform(PxVec3(8.0f, 1.0f, -7.5f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), topL->mesh, PxTransform(PxVec3(0.5f, 0.f, 0.0f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
+			TLjoint = new RevoluteJoint(base, PxTransform(PxVec3(2.0f, 1.0f, -7.5f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), topL->mesh, PxTransform(PxVec3(0.5f, 0.f, 0.0f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
 
+			{
 			box1 = new Box(PxTransform(PxVec3(13.0f, 20.0f, -8.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(4.0f, 1.0f, 0.5f));
 			box1->GetShape()->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(-PxPi / 4, PxVec3(0.0f, 1.0f, 0.0f))));
 			box1->SetKinematic(true);
@@ -352,8 +374,12 @@ namespace PhysicsEngine
 			box5 = new Box(PxTransform(PxVec3(-5.0f, 10.0f, 11.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(14.f, 1.0f, 0.5f));
 			box5->SetKinematic(true);
 			Add(box5);
+			}
 
-			flap = new Box(PxTransform(PxVec3(8.0f, 17.0f, 11.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(2.5f, 1.0f, 0.2f), 0.1f);
+			flap = new Box(PxTransform(PxVec3(8.0f, 17.0f, 11.0f), PxQuat(tableAngle, PxVec3(0.0f, 0.0f, 1.0f))), PxVec3(1.5f, 1.0f, 0.2f), 0.1f);
+			flapjoint = new RevoluteJoint(base, PxTransform(PxVec3(9.f, 1.5f, 8.f), PxQuat(PxPi / 2, PxVec3(0.f, 0.f, 1.f))), flap, PxTransform(PxVec3(0.0f, 0.f, 0.0f), PxQuat(PxPi / 2, PxVec3(0.0f, 0.0f, 1.0f))));
+			Add(flap);
+
 			LPjoint->DriveVelocity(-10.0f);
 		}
 
